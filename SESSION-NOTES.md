@@ -373,25 +373,182 @@ Claude Response → Knowledge Extractor → knowledge_base
 
 ## Phase 4: App Shell and Dashboard
 **Date:** April 4, 2026
-**Status:** In Progress
+**Status:** Complete
 
-### Phase 4 Scope
+### Work Completed
 
-**Layout & Navigation:**
-- Root layout with sidebar navigation
-- Entity switcher (7 entities)
-- Main content area with responsive design
-- Light theme implementation (warm whites, DM Sans)
+**UI Component Library (`src/components/ui/`):**
 
-**Dashboard Page:**
-- Summary cards (total entities, accounts, open alerts, strategies)
-- Entity overview grid
-- Recent alerts/action items
-- Tax strategy status summary
-- Quick access links
+1. **`Card.tsx`** - Animated card container
+   - `Card` with motion animations (fade in, slide up)
+   - `CardHeader` with label + title pattern
+   - Hover lift effect for interactive cards
 
-**Design System Implementation:**
-- Consistent spacing and typography
-- Card components with proper shadows
-- Status badges (active, at-risk, review, etc.)
-- Color coding for entities and priorities
+2. **`Badge.tsx`** - Status/Priority/Entity badges
+   - `StatusBadge` - active, at-risk, review, not-started, deprecated
+   - `PriorityBadge` - critical, high, medium, low, monitor
+   - `EntityBadge` - Entity color dot with name
+
+3. **`Button.tsx`** - Button variants
+   - Primary (teal), Secondary (outlined), Ghost (text-only)
+   - Size variants (sm, md, lg)
+
+4. **`EntityDot.tsx`** - Entity color indicators
+   - Maps entity slugs to brand colors
+   - Size variants (sm, md, lg)
+
+5. **`MetricCard.tsx`** - Animated metric display
+   - `useSpring` for animated number counting
+   - Currency and integer formatting
+   - Variant styles (default, accent, warning, danger)
+
+6. **`Skeleton.tsx`** - Loading placeholders
+   - `SkeletonCard`, `SkeletonList` components
+   - Pulse animation
+
+**Navigation Components (`src/components/navigation/`):**
+
+1. **`Sidebar.tsx`** - Main navigation
+   - Logo at top
+   - Nav items with active state highlighting
+   - Uses `usePathname()` for route detection
+
+2. **`Header.tsx`** - Top header bar
+   - Mobile menu toggle button
+   - EntitySwitcher dropdown
+
+3. **`EntitySwitcher.tsx`** - Entity dropdown
+   - Fetches entities from `/api/entities`
+   - AnimatePresence for dropdown animation
+   - Entity color dots
+
+4. **`AppShell.tsx`** - Layout wrapper
+   - Responsive sidebar (hidden on mobile)
+   - Mobile slide-out sidebar with AnimatePresence
+   - Main content area with header
+
+**Dashboard Panels (`src/components/panels/`):**
+
+1. **`AlertsPanel.tsx`** - Action items display
+   - Fetches from `/api/alerts`
+   - Priority dots with status colors
+   - Danger background for critical/high items
+   - Entity badges and due dates
+
+2. **`EntityGrid.tsx`** - Entity cards grid
+   - 2-column responsive layout
+   - Entity dots with colors
+   - Counts (accounts, strategies, open alerts)
+   - Hover animations
+
+3. **`StrategiesPanel.tsx`** - Tax strategies list
+   - Quick stats (active, at-risk, review counts)
+   - Impact badges (high, medium, low)
+   - Status badges and CPA flags
+   - Entity badges and estimated savings
+
+**Dashboard Page (`src/app/page.tsx`):**
+
+- Page title with subtitle
+- 4-column metrics strip:
+  - Entities count
+  - Accounts count
+  - Open alerts (warning/danger variants)
+  - Estimated savings (currency format)
+- AlertsPanel (full width)
+- 2-column layout:
+  - EntityGrid (left)
+  - StrategiesPanel (right)
+- Staggered panel entry animations
+
+**Design System (`src/app/globals.css`):**
+
+- Complete CSS custom properties from design-guidance.md
+- Entity color palette (mp, got, saratoga, nice, chippewa, hvr, personal)
+- Component styles: cards, badges, buttons, inputs, tables
+- Priority dots with colored backgrounds
+- Typography utilities (page-title, card-title, section-label, etc.)
+- Skeleton pulse animation
+
+### Challenges Faced
+
+1. **Motion Import Path**
+   - Modern `motion` package uses `motion/react` import (not `framer-motion`)
+   - All components use `import { motion } from 'motion/react'`
+
+2. **CSS Custom Properties in Tailwind v4**
+   - Tailwind v4 uses `@theme inline` directive
+   - Colors defined as `--color-*` for theme access
+   - Entity colors defined as `--entity-*` with Tailwind utilities
+
+### Files Created
+
+| File | Description |
+|------|-------------|
+| `src/components/ui/Card.tsx` | Animated card + header |
+| `src/components/ui/Badge.tsx` | Status/Priority/Entity badges |
+| `src/components/ui/Button.tsx` | Button variants |
+| `src/components/ui/EntityDot.tsx` | Entity color dots |
+| `src/components/ui/MetricCard.tsx` | Animated metric display |
+| `src/components/ui/Skeleton.tsx` | Loading skeletons |
+| `src/components/ui/index.ts` | UI component exports |
+| `src/components/navigation/Sidebar.tsx` | Main sidebar nav |
+| `src/components/navigation/Header.tsx` | Top header bar |
+| `src/components/navigation/EntitySwitcher.tsx` | Entity dropdown |
+| `src/components/navigation/index.ts` | Navigation exports |
+| `src/components/panels/AlertsPanel.tsx` | Alerts display |
+| `src/components/panels/EntityGrid.tsx` | Entity cards |
+| `src/components/panels/StrategiesPanel.tsx` | Strategies list |
+| `src/components/panels/index.ts` | Panel exports |
+| `src/components/AppShell.tsx` | Layout wrapper |
+
+### Animation Patterns
+
+**Staggered Entry:**
+```tsx
+<motion.div
+  initial={{ opacity: 0, y: 8 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: index * 0.05, duration: 0.3 }}
+>
+```
+
+**Animated Numbers:**
+```tsx
+const motionValue = useMotionValue(0);
+const spring = useSpring(motionValue, { stiffness: 100, damping: 20 });
+const display = useTransform(spring, (v) => Math.round(v).toLocaleString());
+```
+
+**Dropdown Animation:**
+```tsx
+<AnimatePresence>
+  {open && (
+    <motion.div
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+    />
+  )}
+</AnimatePresence>
+```
+
+### Notes
+
+- All panel components are client-side (`'use client'`)
+- Data fetched from API routes on mount
+- Loading states use skeleton components
+- Responsive breakpoints: md (768px), lg (1024px)
+- Mobile sidebar uses overlay with AnimatePresence
+
+---
+
+## Phase 5: Chat Interface (Next)
+
+### Planned Scope
+
+- Chat page with streaming responses
+- Conversation persistence
+- Message history display
+- Entity context selector
+- Knowledge extraction visualization

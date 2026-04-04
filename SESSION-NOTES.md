@@ -637,12 +637,95 @@ while (true) {
 
 ---
 
-## Phase 6: Notification System (Next)
+## Phase 6: Notification System
+**Date:** April 4, 2026
+**Status:** Complete
+
+### Work Completed
+
+**Cron Routes (`src/app/api/cron/`):**
+
+1. **`deadline-check/route.ts`** - Daily deadline reminders
+   - Schedule: 9 AM UTC daily
+   - Queries open alerts with due dates
+   - Sends reminders based on priority thresholds:
+     - Critical: within 7 days (critical alert if within 3)
+     - High: within 5 days (critical if within 1)
+     - Medium: within 3 days
+     - Low/Monitor: within 1 day
+   - Avoids duplicate notifications (24-hour cooldown)
+   - Logs all sent notifications
+
+2. **`weekly-digest/route.ts`** - Monday summary email
+   - Schedule: 8 AM UTC every Monday
+   - Aggregates stats from past week:
+     - Open alerts count
+     - Critical alerts count
+     - Documents processed
+     - New facts added
+   - Includes upcoming deadlines (next 2 weeks)
+   - Includes strategy status changes
+
+3. **`staleness-check/route.ts`** - Knowledge freshness audit
+   - Schedule: 6 AM UTC daily
+   - Category-specific staleness thresholds:
+     - Property (balances, rents): 30 days
+     - Financial/Strategy: 90 days
+     - Tax/Personal: 365 days
+   - Creates review alerts for stale facts
+   - Avoids duplicate alerts for same fact
+
+**Configuration:**
+
+- **`vercel.json`** - Cron schedule configuration
+- **CRON_SECRET** - Authorization for cron endpoints
+  - Production: requires `Bearer {secret}` header
+  - Development: bypasses auth for testing
+
+### Files Created
+
+| File | Description |
+|------|-------------|
+| `src/app/api/cron/deadline-check/route.ts` | Daily deadline reminder cron |
+| `src/app/api/cron/weekly-digest/route.ts` | Monday weekly digest cron |
+| `src/app/api/cron/staleness-check/route.ts` | Daily staleness audit cron |
+| `vercel.json` | Vercel cron configuration |
+
+### Cron Schedules
+
+| Route | Schedule | Description |
+|-------|----------|-------------|
+| `/api/cron/staleness-check` | `0 6 * * *` | 6 AM UTC daily |
+| `/api/cron/weekly-digest` | `0 8 * * 1` | 8 AM UTC Mondays |
+| `/api/cron/deadline-check` | `0 9 * * *` | 9 AM UTC daily |
+
+### Security
+
+- All cron routes verify `Authorization: Bearer {CRON_SECRET}` header
+- Vercel automatically sends this header for configured crons
+- Manual testing requires header or development mode
+
+### Challenges Faced
+
+1. **Supabase Join Type Inference**
+   - Problem: `entities` relation returned as array type
+   - Solution: Handle both single object and array cases in type casting
+
+### Notes
+
+- Gmail integration uses existing `src/lib/gmail.ts` functions
+- Notification logging tracks sent/opened/dismissed status
+- Cron jobs designed to be idempotent (safe to re-run)
+- Each job returns JSON with results for monitoring
+
+---
+
+## Phase 7: Google Drive Integration (Next)
 
 ### Planned Scope
 
-- Gmail API integration for sending notifications
-- Vercel cron jobs for scheduled checks
-- Deadline reminder emails
-- Weekly digest generation
-- Critical alert notifications
+- Google Drive API setup for CPA exports
+- Export knowledge base facts by entity
+- Export tax strategies and status
+- Export proactive queue items
+- Folder organization by year/quarter

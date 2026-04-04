@@ -226,61 +226,114 @@
 
 ## Phase 3: Core Library and API Routes
 **Date:** April 4, 2026
-**Status:** In Progress
+**Status:** Complete
 
-### Current Database State
-
-| Table | Record Count | Notes |
-|-------|--------------|-------|
-| entities | 7 | mp, got, saratoga, nice, chippewa, hvr, personal |
-| accounts | 15 | Checking, credit, retirement, mortgage, brokerage, 529 |
-| knowledge_base | 120+ | Tax, financial, personal, property facts |
-| tax_strategies | 17 | Active, review, not-started statuses |
-| proactive_queue | 20+ | Critical, high, medium, monitor priorities |
-| conversations | 0 | Ready for chat |
-| transactions | 0 | Ready for document parsing |
-| documents | 0 | Ready for uploads |
-| tax_estimates | 0 | Ready for calculations |
-| notification_log | 0 | Ready for notifications |
-| document_patterns | 0 | Will learn from parsed docs |
-| account_balances | 0 | Will populate from statements |
-
-### Phase 3 Scope
+### Work Completed
 
 **Core Library (`src/lib/`):**
-1. `context-builder.ts` - Assembles system context for Claude API calls
-   - Queries entities, accounts, knowledge, strategies, alerts
-   - Builds structured prompt with all relevant data
-   - Filters by entity when contextually appropriate
 
-2. `claude.ts` - Claude API wrapper
-   - Streaming responses via @anthropic-ai/sdk
-   - System prompt with CFO personality
-   - Token counting and rate limiting
+1. **`context-builder.ts`** - System context assembly
+   - `buildSystemContext(entitySlug?)` - Queries all relevant data from Supabase
+   - `buildChatMessages(userMessage, conversationHistory?, entitySlug?)` - Assembles messages array for Claude
+   - Generates rich system prompt with CFO personality and all context data
+   - Entity filtering when contextually appropriate
 
-3. `knowledge-extractor.ts` - Extracts facts from conversations
-   - Parses Claude responses for new facts
-   - Upserts to knowledge_base with proper lineage
-   - Marks stale facts when superseded
+2. **`claude.ts`** - Claude API wrapper
+   - `chat(userMessage, options)` - Non-streaming single response
+   - `chatStream(userMessage, options)` - Async generator for streaming
+   - `createChatStream(userMessage, options)` - Returns ReadableStream for API routes
+   - `parseDocument(content, context)` - Document parsing with type/entity detection
+   - `extractFactsFromResponse(userMessage, assistantResponse)` - Fact extraction
 
-4. `gmail.ts` - Gmail API integration
-   - Send notifications from dylan@mondayandpartners.com
-   - Weekly digest emails
-   - Deadline alerts
+3. **`knowledge-extractor.ts`** - Fact persistence
+   - `extractAndPersistFacts(userMessage, assistantResponse, conversationId?)` - Main entry point
+   - `persistFacts(facts, source, referenceId?)` - Handles deduplication and superseding
+   - Automatically marks old facts as 'stale' when values change
+   - Uses Claude to extract structured facts from conversations
 
-5. `google-drive.ts` - Google Drive integration
-   - Upload CPA export packages
-   - Organize by tax year
+4. **`gmail.ts`** - Email notifications
+   - `sendEmail(to, subject, htmlBody, textBody?)` - Base email sending
+   - `sendDeadlineReminder(alertId, message, dueDate, priority)` - Deadline alerts
+   - `sendWeeklyDigest(stats)` - Weekly summary email
+   - `sendCriticalAlert(alertId, message, entityName?)` - Immediate critical alerts
+   - Styled HTML emails matching design system
 
 **API Routes (`src/app/api/`):**
-1. `/api/chat` - Main chat endpoint (POST, streaming)
-2. `/api/knowledge` - Knowledge base CRUD
-3. `/api/alerts` - Proactive queue management
-4. `/api/parse` - Document parsing with Claude
-5. `/api/entities` - Entity management
-6. `/api/strategies` - Tax strategy CRUD
-7. `/api/tax-estimate` - Tax calculations
-8. `/api/export` - CPA export generation
+
+1. **`/api/chat`**
+   - POST: Streaming chat with context injection
+   - Uses TransformStream to capture full response for post-processing
+   - Persists conversations to database
+   - Fire-and-forget fact extraction after response
+   - GET: List all conversations
+
+2. **`/api/knowledge`**
+   - GET: List/search facts with entity/category filtering
+   - POST: Add new fact (handles superseding existing)
+   - PATCH: Update fact value or verify
+   - DELETE: Mark fact as stale (soft delete)
+
+3. **`/api/alerts`**
+   - GET: List alerts with priority sorting (critical first)
+   - POST: Create new alert
+   - PATCH: Update status/priority/message
+   - DELETE: Hard delete alert
+
+4. **`/api/parse`**
+   - POST: Upload file, extract text (PDF via pdf-parse), parse with Claude
+   - Detects source from filename/content patterns (Chase, Schwab, etc.)
+   - Creates proactive queue items for questions
+   - GET: List documents with filtering
+
+5. **`/api/entities`**
+   - GET: List all entities with counts, or single entity with related data
+   - POST: Create new entity
+   - PATCH: Update entity
+
+6. **`/api/strategies`**
+   - GET: List strategies with stats (total savings, CPA flag count)
+   - POST: Create new strategy
+   - PATCH: Update strategy
+   - DELETE: Deprecate (soft) or hard delete
+
+### Challenges Faced
+
+1. **Supabase Type Inference (`never` types)**
+   - Problem: Without generated Supabase types, all queries returned `never` type
+   - Error: `Property 'id' does not exist on type 'never'`
+   - Solution: Updated `src/lib/supabase.ts` to use permissive `any` typing
+   - Future: Generate proper types with `npx supabase gen types typescript`
+
+2. **TransformStream API**
+   - Problem: Tried to add custom `chunks` property to TransformStream constructor
+   - Error: `Object literal may only specify known properties`
+   - Solution: Used closure variable `collectedChunks[]` instead of `this.chunks`
+
+3. **pdf-parse ESM Import**
+   - Problem: Dynamic import of pdf-parse failed type checking
+   - Error: `Property 'default' does not exist on type`
+   - Solution: Cast import to `any` for permissive typing
+
+4. **Validation Warnings (False Positives)**
+   - Warning: "searchParams is async in Next.js 16"
+   - These warnings apply to page components where searchParams is a prop
+   - In API routes, `new URL(request.url).searchParams` is synchronous
+   - Ignored these warnings as they don't apply to API route handlers
+
+### Files Created
+
+| File | Lines | Description |
+|------|-------|-------------|
+| `src/lib/context-builder.ts` | ~150 | System context assembly for Claude |
+| `src/lib/claude.ts` | ~250 | Claude API wrapper with streaming |
+| `src/lib/knowledge-extractor.ts` | ~120 | Fact extraction and persistence |
+| `src/lib/gmail.ts` | ~200 | Gmail API notification emails |
+| `src/app/api/chat/route.ts` | ~180 | Streaming chat endpoint |
+| `src/app/api/knowledge/route.ts` | ~330 | Knowledge base CRUD |
+| `src/app/api/alerts/route.ts` | ~310 | Proactive queue management |
+| `src/app/api/parse/route.ts` | ~320 | Document parsing |
+| `src/app/api/entities/route.ts` | ~305 | Entity management |
+| `src/app/api/strategies/route.ts` | ~350 | Tax strategy CRUD |
 
 ### Architecture Notes
 
@@ -292,6 +345,15 @@ User Message → Context Builder → Claude API → Response
                strategies, alerts, conversation history]
 ```
 
+**Streaming with Post-Processing:**
+```
+createChatStream() → TransformStream → Response
+                          ↓
+                    [collect chunks]
+                          ↓
+                    flush() → extractAndPersistFacts()
+```
+
 **Knowledge Extraction Pattern:**
 ```
 Claude Response → Knowledge Extractor → knowledge_base
@@ -300,8 +362,36 @@ Claude Response → Knowledge Extractor → knowledge_base
                   confidence='inferred']
 ```
 
-**Voice/Personality (from spec):**
-- Direct, specific dollar amounts
-- Opinionated ("You should do this" not "you may want to consider")
-- Occasionally funny, never condescending
-- Like a smart friend who knows tax law
+### Notes
+
+- Google Drive integration (`google-drive.ts`) deferred to Phase 8
+- Tax estimate and export routes deferred to later phases
+- Supabase types should be generated before production deployment
+- All API routes follow RESTful patterns with consistent error handling
+
+---
+
+## Phase 4: App Shell and Dashboard
+**Date:** April 4, 2026
+**Status:** In Progress
+
+### Phase 4 Scope
+
+**Layout & Navigation:**
+- Root layout with sidebar navigation
+- Entity switcher (7 entities)
+- Main content area with responsive design
+- Light theme implementation (warm whites, DM Sans)
+
+**Dashboard Page:**
+- Summary cards (total entities, accounts, open alerts, strategies)
+- Entity overview grid
+- Recent alerts/action items
+- Tax strategy status summary
+- Quick access links
+
+**Design System Implementation:**
+- Consistent spacing and typography
+- Card components with proper shadows
+- Status badges (active, at-risk, review, etc.)
+- Color coding for entities and priorities

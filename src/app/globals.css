@@ -1,87 +1,361 @@
 @import "tailwindcss";
 
 /* CFO Command Center Design System - Light Theme Only */
-/* Based on Addendum #1, Section D.1 Color Palette */
+/* Following specs/design-guidance.md precisely */
 
 :root {
   /* Backgrounds */
-  --color-background: #FAFAF9;       /* Page background - warm white */
-  --color-surface: #FFFFFF;          /* Cards, panels, chat bubbles */
-  --color-surface-alt: #F5F5F0;      /* Secondary surface - input fields, code blocks */
+  --bg: #FAFAF9;               /* Page background - warm white */
+  --surface: #FFFFFF;          /* Cards, panels, modals */
+  --surface-alt: #F5F5F0;      /* Secondary surface - inputs, code, hover */
+  --surface-hover: #F0F0EB;    /* Card hover state */
 
   /* Borders */
-  --color-border: #E5E5E0;           /* Borders, dividers - warm gray */
-  --color-border-active: #D0D0C8;    /* Active/hover border state */
+  --border: #E5E5E0;           /* Default borders, dividers */
+  --border-active: #D0D0C8;    /* Focused/active borders */
 
   /* Text */
-  --color-text: #1A1A1F;             /* Primary text - near black */
-  --color-text-secondary: #555560;   /* Secondary text, descriptions */
-  --color-text-muted: #8A8A95;       /* Labels, timestamps, metadata */
+  --text: #1A1A1F;             /* Primary text */
+  --text-secondary: #555560;   /* Descriptions, secondary content */
+  --text-muted: #8A8A95;       /* Labels, timestamps, metadata */
+  --text-faint: #B5B5BF;       /* Placeholder text, disabled states */
 
   /* Accent */
-  --color-accent: #1A8A7D;           /* Primary accent - teal-green */
-  --color-accent-light: #E6F5F3;     /* Accent background tint */
+  --accent: #1A8A7D;           /* Primary actions, links, active states */
+  --accent-hover: #15756A;     /* Accent hover */
+  --accent-light: #E6F5F3;     /* Accent background tint */
+  --accent-text: #0D5C53;      /* Text on accent-light backgrounds */
 
-  /* Status Colors */
-  --color-warning: #D4930D;          /* Amber - attention needed */
-  --color-warning-light: #FFF8E6;    /* Warning background */
-  --color-danger: #CC3333;           /* Red - overdue, urgent */
-  --color-danger-light: #FFF0F0;     /* Danger background */
-  --color-success: #2D8A4E;          /* Green - active, confirmed */
-  --color-success-light: #EDFCF2;    /* Success background */
+  /* Semantic */
+  --warning: #D4930D;          /* Attention needed, not crisis */
+  --warning-light: #FFF8E6;    /* Warning background */
+  --warning-text: #8A6009;     /* Text on warning backgrounds */
+
+  --danger: #CC3333;           /* Overdue, at-risk, urgent */
+  --danger-light: #FFF0F0;     /* Danger background */
+  --danger-text: #8A1F1F;      /* Text on danger backgrounds */
+
+  --success: #2D8A4E;          /* Active, confirmed, healthy */
+  --success-light: #EDFCF2;    /* Success background */
+  --success-text: #1A5C30;     /* Text on success backgrounds */
+
+  /* Entity colors (used for dots, tags, chart series) */
+  --entity-mp: #1A8A7D;        /* Monday + Partners */
+  --entity-got: #CC3333;       /* Game of Thrones LLC */
+  --entity-saratoga: #7C5CFC;  /* Saratoga */
+  --entity-nice: #D4930D;      /* Nice apartment */
+  --entity-chippewa: #E07C24;  /* Chippewa (primary home) */
+  --entity-hvr: #8B6B4E;       /* Hidden Valley Ranch */
+  --entity-personal: #2D8A4E;  /* Personal */
 
   /* Typography */
-  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-body: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), 'SF Mono', 'Fira Code', monospace;
 }
 
 @theme inline {
-  /* Colors */
-  --color-background: var(--color-background);
-  --color-surface: var(--color-surface);
-  --color-surface-alt: var(--color-surface-alt);
-  --color-border: var(--color-border);
-  --color-border-active: var(--color-border-active);
-  --color-text: var(--color-text);
-  --color-text-secondary: var(--color-text-secondary);
-  --color-text-muted: var(--color-text-muted);
-  --color-accent: var(--color-accent);
-  --color-accent-light: var(--color-accent-light);
-  --color-warning: var(--color-warning);
-  --color-warning-light: var(--color-warning-light);
-  --color-danger: var(--color-danger);
-  --color-danger-light: var(--color-danger-light);
-  --color-success: var(--color-success);
-  --color-success-light: var(--color-success-light);
+  /* Colors for Tailwind */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-border-active: var(--border-active);
+  --color-text: var(--text);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-light: var(--accent-light);
+  --color-accent-text: var(--accent-text);
+  --color-warning: var(--warning);
+  --color-warning-light: var(--warning-light);
+  --color-warning-text: var(--warning-text);
+  --color-danger: var(--danger);
+  --color-danger-light: var(--danger-light);
+  --color-danger-text: var(--danger-text);
+  --color-success: var(--success);
+  --color-success-light: var(--success-light);
+  --color-success-text: var(--success-text);
+
+  /* Entity colors */
+  --color-entity-mp: var(--entity-mp);
+  --color-entity-got: var(--entity-got);
+  --color-entity-saratoga: var(--entity-saratoga);
+  --color-entity-nice: var(--entity-nice);
+  --color-entity-chippewa: var(--entity-chippewa);
+  --color-entity-hvr: var(--entity-hvr);
+  --color-entity-personal: var(--entity-personal);
 
   /* Fonts */
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-body);
   --font-mono: var(--font-mono);
 }
 
 /* Base styles */
 body {
-  background: var(--color-background);
-  color: var(--color-text);
-  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
-/* Data values should use mono font */
+/* Card styling from design spec */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-hover:hover {
+  border-color: var(--border-active);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Status badges - text only, no pill backgrounds */
+.badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+}
+
+.badge-active { color: var(--success); }
+.badge-at-risk { color: var(--danger); }
+.badge-review { color: var(--warning); }
+.badge-explore { color: var(--text-muted); }
+.badge-not-started { color: var(--text-muted); }
+
+/* Section labels - uppercase mono */
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+/* Entity tag */
+.entity-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* Entity dot - slightly rounded square */
+.entity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Dollar amounts and data values */
 .font-data {
   font-family: var(--font-mono);
 }
 
-/* Card styling from spec */
-.card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+/* Metric value - large dashboard numbers */
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
-/* Status badges */
-.status-active { color: var(--color-success); }
-.status-at-risk { color: var(--color-danger); }
-.status-review { color: var(--color-warning); }
-.status-explore { color: var(--color-text-muted); }
+/* Metric label */
+.metric-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+/* Dollar amounts in body text */
+.dollar-amount {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Small data (dates, percentages, account numbers) */
+.small-data {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Card title */
+.card-title {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Page title */
+.page-title {
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Primary button */
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+
+/* Secondary button */
+.btn-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-secondary:hover {
+  border-color: var(--border-active);
+  color: var(--text);
+}
+
+/* Input fields */
+.input {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s ease;
+  width: 100%;
+}
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.input::placeholder {
+  color: var(--text-faint);
+}
+
+/* Skeleton loading pulse */
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+.skeleton {
+  background: var(--surface-alt);
+  border-radius: 4px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Data table styling */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.data-table th {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+.data-table tr:hover td {
+  background: var(--surface-alt);
+}
+
+/* Progress bar */
+.progress-bar {
+  height: 4px;
+  background: var(--surface-alt);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+/* Alert item with priority dot */
+.alert-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+}
+.alert-item:last-child {
+  border-bottom: none;
+}
+
+/* Priority dots */
+.priority-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.priority-critical { background: var(--danger); }
+.priority-high { background: var(--danger); }
+.priority-medium { background: var(--warning); }
+.priority-low { background: var(--text-muted); }
+.priority-monitor { background: var(--text-faint); }
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-active);
+}

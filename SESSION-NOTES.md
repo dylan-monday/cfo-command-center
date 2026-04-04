@@ -208,12 +208,11 @@
 | Tax Strategies | 17 |
 | Proactive Queue Items | 20+ |
 
-### Next Steps (Phase 3)
+### Deployment Status
 
-1. Run migrations against Supabase (via dashboard SQL editor or CLI)
-2. Run seed script: `npm run seed`
-3. Build core lib: context-builder, Claude wrapper, knowledge extractor
-4. Create API routes: /api/chat, /api/knowledge, /api/alerts, etc.
+- Migrations executed in Supabase SQL Editor (April 4, 2026)
+- Seed script ran successfully: `npm run seed`
+- Database fully populated and operational
 
 ### Notes
 
@@ -221,3 +220,88 @@
 - Seed script uses service role key (bypasses RLS)
 - Storage path convention: `{entity_slug}/{year}/{doc_type}/{filename}`
 - All strategies have `cpa_flag` boolean for CPA review items
+- Added `dotenv` package for seed script env loading
+
+---
+
+## Phase 3: Core Library and API Routes
+**Date:** April 4, 2026
+**Status:** In Progress
+
+### Current Database State
+
+| Table | Record Count | Notes |
+|-------|--------------|-------|
+| entities | 7 | mp, got, saratoga, nice, chippewa, hvr, personal |
+| accounts | 15 | Checking, credit, retirement, mortgage, brokerage, 529 |
+| knowledge_base | 120+ | Tax, financial, personal, property facts |
+| tax_strategies | 17 | Active, review, not-started statuses |
+| proactive_queue | 20+ | Critical, high, medium, monitor priorities |
+| conversations | 0 | Ready for chat |
+| transactions | 0 | Ready for document parsing |
+| documents | 0 | Ready for uploads |
+| tax_estimates | 0 | Ready for calculations |
+| notification_log | 0 | Ready for notifications |
+| document_patterns | 0 | Will learn from parsed docs |
+| account_balances | 0 | Will populate from statements |
+
+### Phase 3 Scope
+
+**Core Library (`src/lib/`):**
+1. `context-builder.ts` - Assembles system context for Claude API calls
+   - Queries entities, accounts, knowledge, strategies, alerts
+   - Builds structured prompt with all relevant data
+   - Filters by entity when contextually appropriate
+
+2. `claude.ts` - Claude API wrapper
+   - Streaming responses via @anthropic-ai/sdk
+   - System prompt with CFO personality
+   - Token counting and rate limiting
+
+3. `knowledge-extractor.ts` - Extracts facts from conversations
+   - Parses Claude responses for new facts
+   - Upserts to knowledge_base with proper lineage
+   - Marks stale facts when superseded
+
+4. `gmail.ts` - Gmail API integration
+   - Send notifications from dylan@mondayandpartners.com
+   - Weekly digest emails
+   - Deadline alerts
+
+5. `google-drive.ts` - Google Drive integration
+   - Upload CPA export packages
+   - Organize by tax year
+
+**API Routes (`src/app/api/`):**
+1. `/api/chat` - Main chat endpoint (POST, streaming)
+2. `/api/knowledge` - Knowledge base CRUD
+3. `/api/alerts` - Proactive queue management
+4. `/api/parse` - Document parsing with Claude
+5. `/api/entities` - Entity management
+6. `/api/strategies` - Tax strategy CRUD
+7. `/api/tax-estimate` - Tax calculations
+8. `/api/export` - CPA export generation
+
+### Architecture Notes
+
+**Context Injection Pattern:**
+```
+User Message → Context Builder → Claude API → Response
+                    ↓
+              [entities, accounts, knowledge,
+               strategies, alerts, conversation history]
+```
+
+**Knowledge Extraction Pattern:**
+```
+Claude Response → Knowledge Extractor → knowledge_base
+                        ↓
+                 [new facts with source='chat',
+                  confidence='inferred']
+```
+
+**Voice/Personality (from spec):**
+- Direct, specific dollar amounts
+- Opinionated ("You should do this" not "you may want to consider")
+- Occasionally funny, never condescending
+- Like a smart friend who knows tax law

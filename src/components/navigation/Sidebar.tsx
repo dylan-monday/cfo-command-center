@@ -36,7 +36,9 @@ export function Sidebar() {
         <div className="section-label px-3 py-2">Navigation</div>
         <ul className="space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = item.href === '/'
+              ? pathname === '/'
+              : pathname.startsWith(item.href);
             return (
               <li key={item.href}>
                 <Link

@@ -720,12 +720,103 @@ while (true) {
 
 ---
 
-## Phase 7: Google Drive Integration (Next)
+## Phase 7: Google Drive Integration and Tax Estimates
+**Date:** April 4, 2026
+**Status:** Complete
+
+### Work Completed
+
+**Google Drive Library (`src/lib/google-drive.ts`):**
+
+1. **Authentication**
+   - OAuth2 client using existing Google credentials
+   - Reuses GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN
+
+2. **Folder Management**
+   - `ensureFolder()` - Create or find existing folder
+   - Prevents duplicate folders
+   - Supports nested folder structure
+
+3. **File Operations**
+   - `uploadFile()` - Upload with duplicate detection
+   - Updates existing files instead of creating duplicates
+   - Returns web view link for sharing
+
+4. **Export Functions**
+   - `exportKnowledgeBase(taxYear, entitySlug?)` - Facts by category
+   - `exportStrategies(taxYear)` - Strategies with CPA flags highlighted
+   - `exportActionItems(taxYear)` - Alerts by priority
+   - `generateCPAExport(taxYear)` - Full package (all 3 exports)
+
+**Export API Route (`/api/export`):**
+
+- **POST** - Generate exports to Google Drive
+  - `type: 'full'` - All exports
+  - `type: 'knowledge'` - Knowledge base only
+  - `type: 'strategies'` - Tax strategies only
+  - `type: 'actions'` - Action items only
+  - Optional `entitySlug` for filtered exports
+- **GET** - List available export types
+
+**Tax Estimate API Route (`/api/tax-estimate`):**
+
+- **GET** - Fetch latest estimate or history
+  - `?taxYear=2025` - Specific year
+  - `?history=true` - All estimates for year
+- **POST** - Create new estimate
+  - Calculates taxable income
+  - Applies 2024 MFJ progressive tax brackets
+  - Computes projected liability
+- **PATCH** - Update existing estimate
+  - Recalculates if income/deductions change
+
+### Files Created
+
+| File | Description |
+|------|-------------|
+| `src/lib/google-drive.ts` | Google Drive integration library |
+| `src/app/api/export/route.ts` | CPA export endpoint |
+| `src/app/api/tax-estimate/route.ts` | Tax estimate CRUD |
+
+### Export Format
+
+All exports generate Markdown files organized by tax year:
+
+```
+Google Drive/
+└── Tax Year 2025/
+    ├── knowledge-base-all-2025.md
+    ├── knowledge-base-mp-2025.md (per entity)
+    ├── tax-strategies-2025.md
+    └── action-items-2025.md
+```
+
+### Tax Calculation
+
+Simplified 2024 MFJ brackets used for estimates:
+- 10%: $0 - $23,200
+- 12%: $23,200 - $94,300
+- 22%: $94,300 - $201,050
+- 24%: $201,050 - $383,900
+- 32%: $383,900 - $487,450
+- 35%: $487,450 - $731,200
+- 37%: $731,200+
+
+### Notes
+
+- GOOGLE_DRIVE_FOLDER_ID specifies the root CPA folder
+- Exports are idempotent (safe to re-run)
+- CPA-flagged strategies highlighted at top of export
+- Tax estimates track history for year-over-year comparison
+
+---
+
+## Phase 8: Deployment (Next)
 
 ### Planned Scope
 
-- Google Drive API setup for CPA exports
-- Export knowledge base facts by entity
-- Export tax strategies and status
-- Export proactive queue items
-- Folder organization by year/quarter
+- Deploy to Vercel
+- Configure cfo.mondayandpartners.com domain
+- Set production environment variables
+- Verify cron jobs running
+- Test full application flow

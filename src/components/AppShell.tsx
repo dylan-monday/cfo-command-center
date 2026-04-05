@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sidebar, Header } from '@/components/navigation';
 
@@ -9,7 +10,19 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Chat routes use their own full-width layout
+  const isChatRoute = pathname === '/chat' || pathname.startsWith('/chat/');
+
+  if (isChatRoute) {
+    return (
+      <div className="h-screen bg-bg overflow-hidden">
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">

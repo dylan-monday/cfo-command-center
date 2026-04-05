@@ -10,6 +10,12 @@ This is NOT a typical dashboard. It's a personal financial command center that f
 
 **The aesthetic is:** Warm minimalism with bold data. Think high-end fintech meets editorial design. Soft surfaces, generous radius, floating cards, and confident typography. The UI has personality — it's not afraid of space, warmth, or visual hierarchy.
 
+No gradients anywhere in the UI. Solid colors only. The accent 
+is flat #1A8A7D. Buttons are flat fills. Entity colors are solid. 
+Backgrounds are solid. The only gradient allowed is the skeleton 
+shimmer loading animation. Remove the gradient from the "New Chat" 
+button — make it a solid accent color or a ghost button.
+
 **Three principles:**
 
 1. **Warm and inviting** — The palette leans warm. Backgrounds have warmth (not blue-gray). Cards feel like they float on soft surfaces. Nothing is sterile or clinical.

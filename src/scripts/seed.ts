@@ -260,6 +260,12 @@ const globalFacts: Array<{ category: KnowledgeCategory; key: string; value: stri
   { category: 'tax', key: 'q2_estimated_due', value: '06/15/2026' },
   { category: 'tax', key: 'q3_estimated_due', value: '09/15/2026' },
   { category: 'tax', key: 'q4_estimated_due', value: '01/15/2027' },
+
+  // System Goals
+  { category: 'goals', key: 'primary_goal_1', value: 'Be smarter about tax strategies than I currently am. Surface things I should be doing but aren\'t, and verify things I am doing are being done correctly.' },
+  { category: 'goals', key: 'primary_goal_2', value: 'Hand my CPA perfectly organized, complete information at tax time. No gaps, no scrambling, no missing documents. The CPA packet should be ready before they ask for it.' },
+  { category: 'goals', key: 'primary_goal_3', value: 'Achieve zero federal tax liability or a refund. Every recommendation, every estimate, every strategy should be oriented toward this target.' },
+  { category: 'goals', key: 'operating_principle', value: 'This system is never finished. It gets smarter with every conversation and every document. Ask me questions when you need information. Flag issues before they become problems. Be direct and specific with dollar amounts.' },
 ];
 
 // Facts by entity slug

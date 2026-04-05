@@ -73,7 +73,8 @@ export type KnowledgeCategory =
   | 'strategy'
   | 'cpa'
   | 'legal'
-  | 'property';
+  | 'property'
+  | 'goals';
 
 export type KnowledgeSource = 'seed' | 'chat' | 'document' | 'user';
 

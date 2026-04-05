@@ -11,6 +11,13 @@ interface Message {
   timestamp?: string;
 }
 
+const SUGGESTED_PROMPTS = [
+  'How am I doing on taxes?',
+  'What needs my attention?',
+  'Summarize the Saratoga situation',
+  'What money am I leaving on the table?',
+];
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -126,65 +133,45 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header with entity selector */}
-      <div className="border-b border-border bg-surface px-4 py-3 flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-text">Chat with your CFO</h1>
-          <p className="text-xs text-text-muted">
-            Ask anything about taxes, strategies, or your finances
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-text-muted">Context:</span>
-          <select
-            value={entitySlug || ''}
-            onChange={(e) => setEntitySlug(e.target.value || null)}
-            className="text-sm border border-border rounded-md px-2 py-1 bg-bg text-text focus:outline-none focus:ring-2 focus:ring-accent/30"
-          >
-            <option value="">All entities</option>
-            {entities.map((entity) => (
-              <option key={entity.slug} value={entity.slug}>
-                {entity.name}
-              </option>
-            ))}
-          </select>
-        </div>
+    <div className="h-full flex flex-col bg-bg">
+      {/* Minimal header */}
+      <div className="hidden md:flex h-14 border-b border-border bg-surface/50 backdrop-blur-sm px-6 items-center justify-between">
+        <h1 className="text-lg font-semibold text-text">CFO</h1>
+        <select
+          value={entitySlug || ''}
+          onChange={(e) => setEntitySlug(e.target.value || null)}
+          className="text-sm border border-border rounded-lg px-3 py-1.5 bg-surface text-text focus:outline-none focus:border-accent"
+        >
+          <option value="">All entities</option>
+          {entities.map((entity) => (
+            <option key={entity.slug} value={entity.slug}>
+              {entity.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-3xl mx-auto space-y-4">
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
           {messages.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-12"
+              transition={{ duration: 0.4 }}
+              className="flex flex-col items-center justify-center h-[calc(100vh-280px)] md:h-[calc(100vh-200px)]"
             >
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/10 flex items-center justify-center">
-                <span className="text-2xl">💬</span>
-              </div>
-              <h2 className="text-lg font-semibold text-text mb-2">
-                Start a conversation
+              <h2 className="text-2xl font-semibold text-text mb-6">
+                What&apos;s on your mind?
               </h2>
-              <p className="text-sm text-text-muted max-w-md mx-auto">
-                Ask about your tax strategies, deadlines, entity structures, or
-                anything else about your finances. I have full context on all your
-                entities and accounts.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-2 justify-center">
-                {[
-                  'What tax deadlines are coming up?',
-                  "What's the status of my 401(k) contributions?",
-                  'Summarize the GOT property finances',
-                  'What actions need my attention?',
-                ].map((suggestion) => (
+              <div className="flex flex-wrap gap-3 justify-center max-w-lg">
+                {SUGGESTED_PROMPTS.map((prompt) => (
                   <button
-                    key={suggestion}
-                    onClick={() => handleSend(suggestion)}
-                    className="text-xs px-3 py-1.5 rounded-full border border-border hover:border-accent hover:text-accent transition-colors"
+                    key={prompt}
+                    onClick={() => handleSend(prompt)}
+                    className="px-4 py-2.5 text-[13px] rounded-xl border border-border bg-surface hover:border-accent hover:text-accent transition-all shadow-sm hover:shadow-md"
                   >
-                    {suggestion}
+                    {prompt}
                   </button>
                 ))}
               </div>

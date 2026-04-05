@@ -1,7 +1,7 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Sparkles } from 'lucide-react';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
@@ -10,67 +10,111 @@ interface ChatMessageProps {
   isStreaming?: boolean;
 }
 
+// Format dollar amounts with JetBrains Mono
+function formatContent(content: string) {
+  // Match dollar amounts like $1,234.56 or $1234
+  const dollarRegex = /(\$[\d,]+(?:\.\d{2})?)/g;
+  const parts = content.split(dollarRegex);
+
+  return parts.map((part, index) => {
+    if (part.match(dollarRegex)) {
+      return (
+        <span key={index} className="font-mono font-medium">
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+}
+
 export function ChatMessage({ role, content, timestamp, isStreaming }: ChatMessageProps) {
+  const [showTimestamp, setShowTimestamp] = useState(false);
   const isUser = role === 'user';
+
+  // Typing indicator for streaming with no content
+  if (isStreaming && !content) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        className="flex flex-col items-start"
+      >
+        <span className="text-[10px] font-mono uppercase tracking-wider text-text-muted mb-1.5 ml-1">
+          CFO
+        </span>
+        <div className="bg-surface border border-[rgba(0,0,0,0.06)] rounded-[20px_20px_20px_4px] px-5 py-4 shadow-md">
+          <div className="flex gap-1.5">
+            {[0, 1, 2].map((i) => (
+              <motion.span
+                key={i}
+                className="w-1.5 h-1.5 rounded-full bg-text-muted"
+                animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
+                transition={{
+                  duration: 0.8,
+                  repeat: Infinity,
+                  delay: i * 0.15,
+                  ease: 'easeInOut',
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className={`flex gap-4 ${isUser ? 'flex-row-reverse' : ''}`}
+      initial={{ opacity: 0, y: 12, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
+      onMouseEnter={() => setShowTimestamp(true)}
+      onMouseLeave={() => setShowTimestamp(false)}
     >
-      {/* Avatar */}
-      <div
-        className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-          isUser
-            ? 'bg-surface-alt border border-border'
-            : 'gradient-primary'
-        }`}
-      >
-        {isUser ? (
-          <User className="w-5 h-5 text-text-secondary" />
-        ) : (
-          <Sparkles className="w-5 h-5 text-text-on-gradient" />
-        )}
-      </div>
+      {/* CFO label - only for assistant messages */}
+      {!isUser && (
+        <span className="text-[10px] font-mono uppercase tracking-wider text-text-muted mb-1.5 ml-1">
+          CFO
+        </span>
+      )}
 
       {/* Message bubble */}
       <div
-        className={`max-w-[75%] rounded-2xl px-5 py-4 ${
+        className={`max-w-[75%] px-[18px] py-[14px] ${
           isUser
-            ? 'bg-surface-dark text-text-on-dark'
-            : 'bg-surface border border-border shadow-sm'
+            ? 'bg-[#0D0C0B] text-white rounded-[20px_20px_4px_20px]'
+            : 'bg-surface border border-[rgba(0,0,0,0.06)] rounded-[20px_20px_20px_4px] shadow-md'
         }`}
       >
-        <div
-          className={`text-sm leading-relaxed whitespace-pre-wrap ${
-            isUser ? '' : 'text-text'
-          }`}
-        >
-          {content}
-          {isStreaming && (
+        <div className="text-[14px] leading-[1.6] whitespace-pre-wrap">
+          {isUser ? content : formatContent(content)}
+          {isStreaming && content && (
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ repeat: Infinity, duration: 0.5, repeatType: 'reverse' }}
-              className="inline-block w-2 h-5 ml-1 rounded-sm bg-gradient-end"
+              className="inline-block w-0.5 h-4 ml-0.5 bg-accent"
             />
           )}
         </div>
-        {timestamp && (
-          <div
-            className={`text-[11px] mt-3 ${
-              isUser ? 'text-white/50' : 'text-text-muted'
-            }`}
-          >
-            {new Date(timestamp).toLocaleTimeString([], {
+      </div>
+
+      {/* Timestamp - only on hover */}
+      <motion.span
+        initial={false}
+        animate={{ opacity: showTimestamp ? 1 : 0 }}
+        className={`text-[11px] text-text-faint mt-1 ${isUser ? 'mr-1' : 'ml-1'}`}
+      >
+        {timestamp
+          ? new Date(timestamp).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
-            })}
-          </div>
-        )}
-      </div>
+            })
+          : ''}
+      </motion.span>
     </motion.div>
   );
 }

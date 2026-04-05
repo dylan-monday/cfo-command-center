@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { MetricCard, Card, CardHeader } from '@/components/ui';
-import { AlertsPanel, EntityGrid, StrategiesPanel, KnowledgePanel } from '@/components/panels';
+import { AlertsPanel, EntityGrid, StrategiesPanel, KnowledgePanel, InboxIndicator } from '@/components/panels';
 import {
   Building2,
   Wallet,
@@ -203,13 +203,24 @@ export default function Dashboard() {
         <AlertsPanel limit={5} />
       </motion.div>
 
-      {/* CPA Packet Generator */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.28, duration: 0.4 }}
-      >
-        <Card animate={false}>
+      {/* Inbox Indicator + CPA Packet Generator */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Inbox Indicator */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.28, duration: 0.4 }}
+        >
+          <InboxIndicator />
+        </motion.div>
+
+        {/* CPA Packet Generator */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+        >
+          <Card animate={false}>
           <CardHeader
             label="Export"
             title="Generate CPA Packet"
@@ -320,7 +331,8 @@ export default function Dashboard() {
             </div>
           )}
         </Card>
-      </motion.div>
+        </motion.div>
+      </div>
 
       {/* Two column layout for entities and strategies */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect, use } from 'react';
-import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { ChatMessage, ChatInput } from '@/components/chat';
 
@@ -151,15 +150,14 @@ export default function ConversationPage({ params }: ConversationPageProps) {
 
   if (loading) {
     return (
-      <div className="h-full flex flex-col">
-        <div className="border-b border-border bg-surface px-4 py-3">
-          <div className="h-6 w-48 bg-surface-alt rounded animate-pulse" />
-          <div className="h-4 w-32 bg-surface-alt rounded animate-pulse mt-1" />
+      <div className="h-full flex flex-col bg-bg">
+        <div className="hidden md:flex h-14 border-b border-border bg-surface/50 px-6 items-center">
+          <div className="h-5 w-48 bg-surface-alt rounded animate-pulse" />
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin mx-auto" />
-            <p className="text-sm text-text-muted mt-2">Loading conversation...</p>
+            <p className="text-sm text-text-muted mt-3">Loading...</p>
           </div>
         </div>
       </div>
@@ -167,37 +165,29 @@ export default function ConversationPage({ params }: ConversationPageProps) {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header with entity selector */}
-      <div className="border-b border-border bg-surface px-4 py-3 flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-text truncate max-w-md">
-            {title || 'Conversation'}
-          </h1>
-          <p className="text-xs text-text-muted">
-            {messages.length} messages
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-text-muted">Context:</span>
-          <select
-            value={entitySlug || ''}
-            onChange={(e) => setEntitySlug(e.target.value || null)}
-            className="text-sm border border-border rounded-md px-2 py-1 bg-bg text-text focus:outline-none focus:ring-2 focus:ring-accent/30"
-          >
-            <option value="">All entities</option>
-            {entities.map((entity) => (
-              <option key={entity.slug} value={entity.slug}>
-                {entity.name}
-              </option>
-            ))}
-          </select>
-        </div>
+    <div className="h-full flex flex-col bg-bg">
+      {/* Minimal header */}
+      <div className="hidden md:flex h-14 border-b border-border bg-surface/50 backdrop-blur-sm px-6 items-center justify-between">
+        <h1 className="text-lg font-semibold text-text truncate max-w-md">
+          {title || 'CFO'}
+        </h1>
+        <select
+          value={entitySlug || ''}
+          onChange={(e) => setEntitySlug(e.target.value || null)}
+          className="text-sm border border-border rounded-lg px-3 py-1.5 bg-surface text-text focus:outline-none focus:border-accent"
+        >
+          <option value="">All entities</option>
+          {entities.map((entity) => (
+            <option key={entity.slug} value={entity.slug}>
+              {entity.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-3xl mx-auto space-y-4">
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
           {messages.map((msg, index) => (
             <ChatMessage
               key={index}

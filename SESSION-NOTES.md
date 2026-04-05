@@ -952,3 +952,143 @@ mp, got, saratoga, nice, chippewa, hvr, personal
 3. Seed production database
 4. Test full flow end-to-end
 5. Iterate based on usage
+
+---
+
+## Session: Backlog Items
+**Date:** April 5, 2026
+**Status:** In Progress
+
+### Work Completed
+
+**1. Google Drive Inbox Sweep (Complete)**
+- Created `/api/cron/drive-sweep/route.ts` - Main sweep endpoint
+  - Runs every 30 minutes via Vercel cron
+  - Lists files from CFO Inbox folder in Google Drive
+  - Downloads each file, sends through `/api/parse` pipeline
+  - Moves processed files to "CFO Processed" folder
+  - Creates proactive_queue items for parser questions
+- Created `/api/cron/drive-sweep/status/route.ts` - Status API
+  - Returns inbox file count, last sweep time, processing state
+- Created `src/components/panels/InboxIndicator.tsx` - Dashboard widget
+  - Shows "X files in inbox" if unprocessed files exist
+  - Last sweep timestamp
+  - Manual "Sweep now" button
+- Updated `vercel.json` with cron schedule: `*/30 * * * *`
+
+**2. System Goals (Already Complete)**
+- Verified goals already present in `src/scripts/seed.ts` (lines 264-268)
+- Four goals with category 'goals': primary_goal_1, primary_goal_2, primary_goal_3, operating_principle
+
+**3. UI Top Bar Changes (Complete)**
+- Removed "Connected" text indicator from Header.tsx
+- Added small green dot (6px) next to "DiBona" in Sidebar.tsx
+- Removed "Help" nav item from bottomNavItems in Sidebar.tsx
+
+**4. Chat Interface Redesign (Complete)**
+
+Created entirely new two-panel chat layout:
+
+**Layout Changes:**
+- Modified `AppShell.tsx` to detect `/chat` routes and render without standard sidebar/header
+- Rewrote `chat/layout.tsx` with two-panel design:
+  - Left panel (280px): Nav links + conversation list
+  - Right panel: Chat content area
+- Mobile: hamburger menu with slide-out drawer
+
+**Chat Components Updated:**
+- `ChatMessage.tsx`:
+  - Removed avatar icons entirely
+  - User bubbles: dark #0D0C0B with tail bottom-right (radius 20px 20px 4px 20px)
+  - CFO bubbles: white with tail bottom-left (radius 20px 20px 20px 4px)
+  - "CFO" label above assistant messages (JetBrains Mono 10px uppercase)
+  - Timestamps only visible on hover
+  - Dollar amounts formatted with JetBrains Mono
+  - Typing indicator with 3 bouncing dots
+
+- `ChatInput.tsx`:
+  - Send button inside input (teal #1A8A7D, 40px circle)
+  - Paperclip attachment icon on left
+  - Focus state with accent border and subtle glow
+
+- `chat/page.tsx`:
+  - New empty state: "What's on your mind?" centered
+  - 4 suggested prompts as ghost buttons
+  - Minimal header: "CFO" left, entity dropdown right
+
+- `chat/[conversationId]/page.tsx`:
+  - Matching minimal header with conversation title
+  - Same styling as main chat page
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `src/components/navigation/Header.tsx` | Removed Connected indicator |
+| `src/components/navigation/Sidebar.tsx` | Added green dot, removed Help |
+| `src/components/AppShell.tsx` | Added chat route detection |
+| `src/app/chat/layout.tsx` | Complete rewrite - two-panel design |
+| `src/components/chat/ChatMessage.tsx` | Complete rewrite - new bubble styles |
+| `src/components/chat/ChatInput.tsx` | Send inside input, paperclip icon |
+| `src/app/chat/page.tsx` | New empty state, minimal header |
+| `src/app/chat/[conversationId]/page.tsx` | Matching minimal header |
+| `vercel.json` | Added drive-sweep cron |
+
+### Files Created
+
+| File | Description |
+|------|-------------|
+| `src/app/api/cron/drive-sweep/route.ts` | Main drive sweep endpoint |
+| `src/app/api/cron/drive-sweep/status/route.ts` | Inbox status API |
+| `src/components/panels/InboxIndicator.tsx` | Dashboard inbox widget |
+
+---
+
+## Session: Design Elevation + Property Manager Mode
+**Date:** April 5, 2026
+**Status:** Pending
+
+### Design Discrepancies Identified
+
+Current `globals.css` does NOT match `specs/design-guidance.md`:
+
+| Element | Current | Design Spec |
+|---------|---------|-------------|
+| Background | #F8F9FA (cool gray) | #EDEBE7 (warm putty) |
+| Accent | #FF934F (orange) | #1A8A7D (teal) |
+| Gradients | Used extensively | NO gradients allowed |
+| Badges | Pill backgrounds | Text-only, color carries meaning |
+| Shadows | Weak | Layered compositing |
+| Entity dots | Circle 10px | Rounded square 8px |
+
+### Design Changes Required
+
+1. **Color Palette Overhaul**
+   - Change --bg to #EDEBE7 (warm)
+   - Change --accent to #1A8A7D (teal)
+   - Remove all gradient definitions
+   - Update entity colors to match spec
+
+2. **Component Updates**
+   - Remove gradient backgrounds from buttons, cards, nav items
+   - Convert badges to text-only (no pill backgrounds)
+   - Update shadows to use layered compositing
+   - Entity dots to rounded squares (radius: 3px)
+
+3. **Typography Verification**
+   - Confirm Urbanist is loading (already defined)
+   - Verify JetBrains Mono for data values
+
+### Property Manager Mode (Pending)
+
+Add operational context to system prompt when property entity selected:
+- Utility bill ranges (SF, NOLA, Nice)
+- PM fee verification (Morley 7%, Satsuma 10%)
+- Repair authorization limits
+- Distribution reconciliation
+- Lease renewal tracking
+- Tenant payment anomaly detection
+- PM reliability notes (Satsuma skeptical, Morley trustworthy)
+- France property CCF mortgage tracking
+
+Add "Property Review" quick action on dashboard for each property entity.

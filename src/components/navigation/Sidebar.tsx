@@ -10,7 +10,6 @@ import {
   FileText,
   Brain,
   Settings,
-  HelpCircle,
 } from 'lucide-react';
 
 interface NavItem {
@@ -30,7 +29,6 @@ const navItems: NavItem[] = [
 
 const bottomNavItems: NavItem[] = [
   { href: '/settings', label: 'Settings', icon: Settings },
-  { href: '/help', label: 'Help', icon: HelpCircle },
 ];
 
 export function Sidebar() {
@@ -84,7 +82,10 @@ export function Sidebar() {
               <span className="text-lg font-bold text-text-on-gradient">D</span>
             </div>
             <div>
-              <h1 className="text-lg font-bold text-text">DiBona</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-bold text-text">DiBona</h1>
+                <span className="w-1.5 h-1.5 rounded-full bg-success" title="Connected" />
+              </div>
               <p className="text-xs text-text-muted">CFO Command Center</p>
             </div>
           </div>

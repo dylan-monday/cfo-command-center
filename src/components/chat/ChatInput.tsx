@@ -2,18 +2,20 @@
 
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { motion } from 'motion/react';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Paperclip } from 'lucide-react';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
   placeholder?: string;
+  onAttach?: () => void;
 }
 
 export function ChatInput({
   onSend,
   disabled = false,
   placeholder = 'Ask your CFO anything...',
+  onAttach,
 }: ChatInputProps) {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -43,9 +45,21 @@ export function ChatInput({
   };
 
   return (
-    <div className="border-t border-border bg-surface/80 backdrop-blur-sm p-4">
+    <div className="p-4 md:p-6">
       <div className="max-w-3xl mx-auto">
-        <div className="flex gap-3 items-end bg-bg rounded-2xl border border-border p-2 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all">
+        {/* Input container */}
+        <div className="relative bg-surface border border-[rgba(0,0,0,0.06)] rounded-[16px] shadow-sm focus-within:border-accent focus-within:shadow-[0_0_0_3px_rgba(26,138,125,0.08)] transition-all">
+          {/* Attachment button */}
+          <button
+            onClick={onAttach}
+            disabled={disabled}
+            className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 text-text-muted hover:text-text-secondary transition-colors disabled:opacity-50"
+            title="Attach file"
+          >
+            <Paperclip className="w-5 h-5" />
+          </button>
+
+          {/* Textarea */}
           <textarea
             ref={textareaRef}
             value={message}
@@ -54,25 +68,28 @@ export function ChatInput({
             disabled={disabled}
             placeholder={placeholder}
             rows={1}
-            className="flex-1 resize-none bg-transparent px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full resize-none bg-transparent pl-12 pr-14 py-4 text-[14px] text-text placeholder:text-text-faint focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
           />
+
+          {/* Send button - inside input */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleSubmit}
             disabled={disabled || !message.trim()}
-            className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-text-on-gradient disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md disabled:shadow-none"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-accent hover:bg-accent-hover flex items-center justify-center text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_2px_8px_rgba(26,138,125,0.3)]"
           >
             {disabled ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <Send className="w-5 h-5" />
+              <Send className="w-4 h-4" />
             )}
           </motion.button>
         </div>
-        <p className="text-[11px] text-text-muted text-center mt-3">
-          Press <kbd className="px-1.5 py-0.5 rounded bg-surface-alt border border-border font-mono text-[10px]">Enter</kbd> to send,{' '}
-          <kbd className="px-1.5 py-0.5 rounded bg-surface-alt border border-border font-mono text-[10px]">Shift+Enter</kbd> for new line
+
+        {/* Helper text */}
+        <p className="text-[11px] text-text-faint text-center mt-3">
+          Enter to send · Shift+Enter for new line
         </p>
       </div>
     </div>

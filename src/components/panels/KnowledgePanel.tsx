@@ -32,6 +32,7 @@ const categoryLabels: Record<KnowledgeCategory, string> = {
   cpa: 'CPA',
   legal: 'Legal',
   property: 'Property',
+  goals: 'Goals',
 };
 
 const confidenceIcons: Record<KnowledgeConfidence, { icon: typeof CheckCircle2; class: string }> = {

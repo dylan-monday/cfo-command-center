@@ -34,12 +34,9 @@ export function Header({ onMenuToggle }: HeaderProps) {
       {/* Center: Navigation tabs (optional, can be empty) */}
       <div className="flex-1" />
 
-      {/* Right: Status */}
+      {/* Right: Reserved for future quick actions */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-success" />
-          <span className="text-xs text-text-muted font-data">Connected</span>
-        </div>
+        {/* Empty for now - could add Upload button, notification bell, etc. */}
       </div>
     </header>
   );

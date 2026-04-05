@@ -17,8 +17,13 @@ import {
   ChevronRight,
   Search,
   Wallet,
+  Users,
+  UserCheck,
+  UserX,
+  Mail,
+  Phone,
 } from 'lucide-react';
-import type { KnowledgeCategory, KnowledgeConfidence } from '@/types';
+import type { KnowledgeCategory, KnowledgeConfidence, PartnerRole, PartnerStatus } from '@/types';
 
 interface KnowledgeFact {
   id: string;
@@ -50,10 +55,30 @@ interface Account {
   entity_id: string;
 }
 
-type SettingsTab = 'knowledge' | 'entities' | 'admin';
+interface Partner {
+  id: string;
+  name: string;
+  role: PartnerRole;
+  company?: string;
+  email?: string;
+  phone?: string;
+  entities?: string[];
+  notes?: string;
+  status: PartnerStatus;
+}
+
+type SettingsTab = 'knowledge' | 'entities' | 'partners' | 'admin';
 
 const categoryOptions: KnowledgeCategory[] = ['tax', 'financial', 'personal', 'strategy', 'cpa', 'legal', 'property'];
 const confidenceOptions: KnowledgeConfidence[] = ['confirmed', 'inferred', 'stale'];
+const roleOptions: { value: PartnerRole; label: string }[] = [
+  { value: 'cpa', label: 'CPA' },
+  { value: 'bookkeeper', label: 'Bookkeeper' },
+  { value: 'property-manager', label: 'Property Manager' },
+  { value: 'advisor', label: 'Financial Advisor' },
+  { value: 'attorney', label: 'Attorney' },
+  { value: 'syndic', label: 'Syndic' },
+];
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('knowledge');
@@ -74,22 +99,31 @@ export default function SettingsPage() {
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [newAccount, setNewAccount] = useState<Partial<Account> | null>(null);
 
+  // Partners state
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
+  const [newPartner, setNewPartner] = useState<Partial<Partner> | null>(null);
+  const [showFormerPartners, setShowFormerPartners] = useState(false);
+
   // Fetch all data
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       try {
-        const [factsRes, entitiesRes] = await Promise.all([
+        const [factsRes, entitiesRes, partnersRes] = await Promise.all([
           fetch('/api/knowledge?limit=1000&includeStale=true'),
           fetch('/api/entities?includeAccounts=true'),
+          fetch('/api/partners?includeFormer=true'),
         ]);
 
         const factsData = await factsRes.json();
         const entitiesData = await entitiesRes.json();
+        const partnersData = await partnersRes.json();
 
         setFacts(factsData.facts || []);
         setEntities(entitiesData.entities || []);
         setAccounts(entitiesData.accounts || []);
+        setPartners(partnersData.partners || []);
       } catch (error) {
         console.error('Failed to fetch settings data:', error);
       } finally {
@@ -150,9 +184,71 @@ export default function SettingsPage() {
     }
   };
 
+  // Save partner (create or update)
+  const savePartner = async (partner: Partial<Partner>) => {
+    try {
+      const method = partner.id ? 'PUT' : 'POST';
+      const res = await fetch('/api/partners', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(partner),
+      });
+
+      if (!res.ok) throw new Error('Failed to save partner');
+
+      const data = await res.json();
+
+      if (partner.id) {
+        setPartners((prev) => prev.map((p) => (p.id === partner.id ? data.partner : p)));
+      } else {
+        setPartners((prev) => [data.partner, ...prev]);
+      }
+
+      setEditingPartner(null);
+      setNewPartner(null);
+    } catch (error) {
+      console.error('Save partner error:', error);
+    }
+  };
+
+  // Delete partner
+  const deletePartner = async (id: string) => {
+    if (!confirm('Delete this partner?')) return;
+
+    try {
+      const res = await fetch(`/api/partners?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete partner');
+      setPartners((prev) => prev.filter((p) => p.id !== id));
+    } catch (error) {
+      console.error('Delete partner error:', error);
+    }
+  };
+
+  // Toggle partner status (active/former)
+  const togglePartnerStatus = async (partner: Partner) => {
+    const newStatus = partner.status === 'active' ? 'former' : 'active';
+    await savePartner({ ...partner, status: newStatus });
+  };
+
+  // Filter partners
+  const filteredPartners = partners.filter((p) =>
+    showFormerPartners ? true : p.status === 'active'
+  );
+
+  // Get entity names for a partner
+  const getPartnerEntityNames = (entityIds?: string[]) => {
+    if (!entityIds || entityIds.length === 0) return 'None';
+    if (entityIds.length === entities.length) return 'All entities';
+    return entityIds
+      .map((id) => entities.find((e) => e.id === id)?.name)
+      .filter(Boolean)
+      .join(', ');
+  };
+
   const tabs = [
     { id: 'knowledge' as const, label: 'Knowledge Base', icon: Database },
     { id: 'entities' as const, label: 'Entities & Accounts', icon: Building2 },
+    { id: 'partners' as const, label: 'Partners', icon: Users },
     { id: 'admin' as const, label: 'Admin', icon: Settings },
   ];
 
@@ -646,6 +742,284 @@ export default function SettingsPage() {
           </Card>
         )}
 
+        {/* Partners Tab */}
+        {activeTab === 'partners' && (
+          <Card animate={false}>
+            <CardHeader
+              label="Partners"
+              title={`${filteredPartners.length} Partners`}
+              action={
+                <button
+                  onClick={() =>
+                    setNewPartner({
+                      name: '',
+                      role: 'cpa',
+                      company: '',
+                      status: 'active',
+                    })
+                  }
+                  className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1"
+                >
+                  <Plus className="w-3 h-3" />
+                  Add Partner
+                </button>
+              }
+            />
+
+            {/* Show former toggle */}
+            <div className="flex items-center gap-2 mb-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showFormerPartners}
+                  onChange={(e) => setShowFormerPartners(e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
+                />
+                <span className="text-sm text-text-secondary">Show former partners</span>
+              </label>
+            </div>
+
+            {/* New partner form */}
+            {newPartner && (
+              <div className="mb-4 p-4 bg-accent-light/20 border border-accent/30 rounded-lg">
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <input
+                    type="text"
+                    placeholder="Name"
+                    value={newPartner.name || ''}
+                    onChange={(e) => setNewPartner({ ...newPartner, name: e.target.value })}
+                    className="px-3 py-2 bg-surface border border-border rounded-md text-sm"
+                  />
+                  <select
+                    value={newPartner.role || 'cpa'}
+                    onChange={(e) => setNewPartner({ ...newPartner, role: e.target.value as PartnerRole })}
+                    className="px-3 py-2 bg-surface border border-border rounded-md text-sm"
+                  >
+                    {roleOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Company (optional)"
+                  value={newPartner.company || ''}
+                  onChange={(e) => setNewPartner({ ...newPartner, company: e.target.value })}
+                  className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm mb-2"
+                />
+                <div className="grid grid-cols-2 gap-3 mb-2">
+                  <input
+                    type="email"
+                    placeholder="Email (optional)"
+                    value={newPartner.email || ''}
+                    onChange={(e) => setNewPartner({ ...newPartner, email: e.target.value })}
+                    className="px-3 py-2 bg-surface border border-border rounded-md text-sm"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Phone (optional)"
+                    value={newPartner.phone || ''}
+                    onChange={(e) => setNewPartner({ ...newPartner, phone: e.target.value })}
+                    className="px-3 py-2 bg-surface border border-border rounded-md text-sm"
+                  />
+                </div>
+                <textarea
+                  placeholder="Notes (optional)"
+                  value={newPartner.notes || ''}
+                  onChange={(e) => setNewPartner({ ...newPartner, notes: e.target.value })}
+                  className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm mb-3"
+                  rows={2}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => savePartner(newPartner)}
+                    disabled={!newPartner.name}
+                    className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1"
+                  >
+                    <Check className="w-3 h-3" />
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setNewPartner(null)}
+                    className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1"
+                  >
+                    <X className="w-3 h-3" />
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {loading ? (
+              <SkeletonList rows={6} />
+            ) : filteredPartners.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="w-10 h-10 text-text-muted mx-auto mb-3" />
+                <p className="text-text-muted">No partners found</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredPartners.map((partner) => (
+                  <div
+                    key={partner.id}
+                    className={`p-4 border rounded-lg transition-colors ${
+                      partner.status === 'former'
+                        ? 'border-border/50 bg-surface-alt/30 opacity-60'
+                        : 'border-border hover:border-border-active'
+                    }`}
+                  >
+                    {editingPartner?.id === partner.id ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <input
+                            type="text"
+                            value={editingPartner.name}
+                            onChange={(e) =>
+                              setEditingPartner({ ...editingPartner, name: e.target.value })
+                            }
+                            className="px-3 py-2 bg-surface border border-border rounded-md text-sm"
+                          />
+                          <select
+                            value={editingPartner.role}
+                            onChange={(e) =>
+                              setEditingPartner({ ...editingPartner, role: e.target.value as PartnerRole })
+                            }
+                            className="px-3 py-2 bg-surface border border-border rounded-md text-sm"
+                          >
+                            {roleOptions.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Company"
+                          value={editingPartner.company || ''}
+                          onChange={(e) =>
+                            setEditingPartner({ ...editingPartner, company: e.target.value })
+                          }
+                          className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm"
+                        />
+                        <div className="grid grid-cols-2 gap-3">
+                          <input
+                            type="email"
+                            placeholder="Email"
+                            value={editingPartner.email || ''}
+                            onChange={(e) =>
+                              setEditingPartner({ ...editingPartner, email: e.target.value })
+                            }
+                            className="px-3 py-2 bg-surface border border-border rounded-md text-sm"
+                          />
+                          <input
+                            type="tel"
+                            placeholder="Phone"
+                            value={editingPartner.phone || ''}
+                            onChange={(e) =>
+                              setEditingPartner({ ...editingPartner, phone: e.target.value })
+                            }
+                            className="px-3 py-2 bg-surface border border-border rounded-md text-sm"
+                          />
+                        </div>
+                        <textarea
+                          placeholder="Notes"
+                          value={editingPartner.notes || ''}
+                          onChange={(e) =>
+                            setEditingPartner({ ...editingPartner, notes: e.target.value })
+                          }
+                          className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm"
+                          rows={2}
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => savePartner(editingPartner)}
+                            className="text-xs text-success hover:underline"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingPartner(null)}
+                            className="text-xs text-text-muted hover:underline"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-semibold">{partner.name}</span>
+                            <span className="text-[10px] font-data uppercase tracking-wider text-text-muted bg-surface-alt px-1.5 py-0.5 rounded">
+                              {roleOptions.find((r) => r.value === partner.role)?.label || partner.role}
+                            </span>
+                            {partner.status === 'former' && (
+                              <span className="text-[10px] font-data uppercase tracking-wider text-warning bg-warning/10 px-1.5 py-0.5 rounded">
+                                Former
+                              </span>
+                            )}
+                          </div>
+                          {partner.company && (
+                            <p className="text-sm text-text-secondary mt-1">{partner.company}</p>
+                          )}
+                          <div className="flex items-center gap-4 mt-2 text-xs text-text-muted">
+                            {partner.email && (
+                              <span className="flex items-center gap-1">
+                                <Mail className="w-3 h-3" />
+                                {partner.email}
+                              </span>
+                            )}
+                            {partner.phone && (
+                              <span className="flex items-center gap-1">
+                                <Phone className="w-3 h-3" />
+                                {partner.phone}
+                              </span>
+                            )}
+                          </div>
+                          {partner.notes && (
+                            <p className="text-xs text-text-muted mt-2 italic">{partner.notes}</p>
+                          )}
+                          <p className="text-[10px] text-text-faint mt-2">
+                            Entities: {getPartnerEntityNames(partner.entities)}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => togglePartnerStatus(partner)}
+                            className="p-1 text-text-muted hover:text-accent transition-colors"
+                            title={partner.status === 'active' ? 'Mark as former' : 'Mark as active'}
+                          >
+                            {partner.status === 'active' ? (
+                              <UserX className="w-3.5 h-3.5" />
+                            ) : (
+                              <UserCheck className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setEditingPartner(partner)}
+                            className="p-1 text-text-muted hover:text-accent transition-colors"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => deletePartner(partner.id)}
+                            className="p-1 text-text-muted hover:text-danger transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+
         {/* Admin Tab */}
         {activeTab === 'admin' && (
           <Card animate={false}>
@@ -678,7 +1052,7 @@ export default function SettingsPage() {
               </a>
 
               {/* System stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="p-4 bg-surface-alt border border-border rounded-lg">
                   <span className="text-[10px] font-data uppercase tracking-wider text-text-muted">
                     Entities
@@ -696,6 +1070,12 @@ export default function SettingsPage() {
                     Facts
                   </span>
                   <p className="text-2xl font-semibold font-data mt-1">{facts.length}</p>
+                </div>
+                <div className="p-4 bg-surface-alt border border-border rounded-lg">
+                  <span className="text-[10px] font-data uppercase tracking-wider text-text-muted">
+                    Partners
+                  </span>
+                  <p className="text-2xl font-semibold font-data mt-1">{partners.filter(p => p.status === 'active').length}</p>
                 </div>
                 <div className="p-4 bg-surface-alt border border-border rounded-lg">
                   <span className="text-[10px] font-data uppercase tracking-wider text-text-muted">

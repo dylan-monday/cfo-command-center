@@ -23,7 +23,19 @@ export const runtime = 'nodejs';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { taxYear, type, entitySlug } = body;
+    const { taxYear, type, entitySlug, partnerId } = body;
+
+    // Get partner info if provided
+    let partner: { name: string; company?: string } | null = null;
+    if (partnerId) {
+      const supabase = createServerSupabaseClient();
+      const { data } = await supabase
+        .from('partners')
+        .select('name, company')
+        .eq('id', partnerId)
+        .single();
+      partner = data;
+    }
 
     // Validate tax year
     const year = taxYear || new Date().getFullYear();
@@ -38,7 +50,7 @@ export async function POST(request: Request) {
 
     switch (type) {
       case 'knowledge':
-        result = await exportKnowledgeBase(year, entitySlug);
+        result = await exportKnowledgeBase(year, entitySlug, partner);
         return NextResponse.json({
           success: result.success,
           file: result.fileUrl
@@ -48,7 +60,7 @@ export async function POST(request: Request) {
         });
 
       case 'strategies':
-        result = await exportStrategies(year);
+        result = await exportStrategies(year, partner);
         return NextResponse.json({
           success: result.success,
           file: result.fileUrl
@@ -58,7 +70,7 @@ export async function POST(request: Request) {
         });
 
       case 'actions':
-        result = await exportActionItems(year);
+        result = await exportActionItems(year, partner);
         return NextResponse.json({
           success: result.success,
           file: result.fileUrl
@@ -70,12 +82,13 @@ export async function POST(request: Request) {
       case 'full':
       default:
         // Full CPA export package
-        const fullResult = await generateCPAExport(year);
+        const fullResult = await generateCPAExport(year, partner);
         return NextResponse.json({
           success: fullResult.success,
           files: fullResult.files,
           errors: fullResult.errors,
           taxYear: year,
+          partner: partner ? { name: partner.name, company: partner.company } : null,
         });
     }
   } catch (error) {

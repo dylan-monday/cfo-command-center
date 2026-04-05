@@ -28,6 +28,8 @@ import type {
   AlertType,
   AlertPriority,
   AlertStatus,
+  PartnerRole,
+  PartnerStatus,
 } from '../types';
 
 // Supabase types for insert operations (simpler than full Database type)
@@ -80,6 +82,17 @@ interface AlertInsert {
   message: string;
   due_date?: string;
   status?: AlertStatus;
+}
+
+interface PartnerInsert {
+  name: string;
+  role: PartnerRole;
+  company?: string;
+  email?: string;
+  phone?: string;
+  entities?: string[];  // Will be populated with entity IDs
+  notes?: string;
+  status: PartnerStatus;
 }
 
 // Load environment variables
@@ -742,6 +755,68 @@ const alertsByEntity: Record<string | 'global', Array<{
 };
 
 // ============================================================================
+// PARTNERS
+// ============================================================================
+
+// Partners with their associated entity slugs (will be converted to IDs)
+const partnersByEntitySlug: Array<{
+  name: string;
+  role: PartnerRole;
+  company?: string;
+  email?: string;
+  phone?: string;
+  entitySlugs: string[];  // 'all' means all entities
+  notes?: string;
+  status: PartnerStatus;
+}> = [
+  {
+    name: 'Aaron Ready',
+    role: 'cpa',
+    company: 'Ready CPA LLC',
+    entitySlugs: ['all'],
+    notes: 'Primary CPA for all entities and personal taxes',
+    status: 'active',
+  },
+  {
+    name: 'Dawn',
+    role: 'bookkeeper',
+    entitySlugs: ['mp'],
+    notes: 'M+P bookkeeper, manages QuickBooks',
+    status: 'active',
+  },
+  {
+    name: 'Steve Crane',
+    role: 'property-manager',
+    company: 'Morley Fredericks',
+    entitySlugs: ['got'],
+    notes: 'GOT property manager, uses AppFolio. 7% management fee.',
+    status: 'active',
+  },
+  {
+    name: 'Satsuma Property Management',
+    role: 'property-manager',
+    company: 'Satsuma',
+    entitySlugs: ['saratoga'],
+    notes: 'Saratoga PM. LOW TRUST — scrutinize everything. 10% fee.',
+    status: 'active',
+  },
+  {
+    name: 'Occidental Asset Management',
+    role: 'advisor',
+    entitySlugs: ['mp'],
+    notes: 'Solo 401(k) advisor for M+P retirement accounts',
+    status: 'active',
+  },
+  {
+    name: 'Objectif Reussite Immobilier',
+    role: 'syndic',
+    entitySlugs: ['nice'],
+    notes: 'French syndic (building management) for Nice apartment',
+    status: 'active',
+  },
+];
+
+// ============================================================================
 // MAIN SEED FUNCTION
 // ============================================================================
 
@@ -764,6 +839,7 @@ async function seed() {
   await supabase.from('document_patterns').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supabase.from('conversations').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supabase.from('knowledge_base').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabase.from('partners').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supabase.from('accounts').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supabase.from('entities').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
@@ -916,6 +992,47 @@ async function seed() {
   console.log(`   ✓ ${alertsToInsert.length} proactive queue items inserted\n`);
 
   // -------------------------------------------------------------------------
+  // Step 7: Insert partners
+  // -------------------------------------------------------------------------
+  console.log('🤝 Inserting partners...');
+
+  const partnersToInsert = partnersByEntitySlug.map((partner) => {
+    // Convert entity slugs to IDs
+    let entityIds: string[] | undefined;
+    if (partner.entitySlugs.includes('all')) {
+      // All entities
+      entityIds = Object.values(entityIdMap);
+    } else {
+      entityIds = partner.entitySlugs
+        .map((slug) => entityIdMap[slug])
+        .filter(Boolean);
+    }
+
+    return {
+      name: partner.name,
+      role: partner.role,
+      company: partner.company,
+      email: partner.email,
+      phone: partner.phone,
+      entities: entityIds,
+      notes: partner.notes,
+      status: partner.status,
+    };
+  });
+
+  const { data: insertedPartners, error: partnersError } = await supabase
+    .from('partners')
+    .insert(partnersToInsert)
+    .select();
+
+  if (partnersError) {
+    console.error('   ✗ Error inserting partners:', partnersError);
+    process.exit(1);
+  }
+
+  console.log(`   ✓ ${insertedPartners!.length} partners inserted\n`);
+
+  // -------------------------------------------------------------------------
   // Summary
   // -------------------------------------------------------------------------
   console.log('═'.repeat(50));
@@ -928,6 +1045,7 @@ Summary:
   • Knowledge Facts:    ${allFacts.length}
   • Tax Strategies:     ${strategiesToInsert.length}
   • Proactive Items:    ${alertsToInsert.length}
+  • Partners:           ${insertedPartners!.length}
 `);
 }
 

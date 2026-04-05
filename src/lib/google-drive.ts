@@ -128,6 +128,49 @@ async function uploadFile(
 }
 
 // ============================================================================
+// Types
+// ============================================================================
+
+interface PartnerInfo {
+  name: string;
+  company?: string;
+}
+
+// ============================================================================
+// Cover Page Helper
+// ============================================================================
+
+/**
+ * Generate the standard cover page header for exports.
+ */
+function generateCoverPage(
+  title: string,
+  taxYear: number,
+  partner?: PartnerInfo | null
+): string {
+  let coverPage = `# DiBona Financial\n\n`;
+  coverPage += `## Tax Year ${taxYear} — ${title}\n\n`;
+
+  if (partner) {
+    coverPage += `**Prepared for:** ${partner.name}`;
+    if (partner.company) {
+      coverPage += `, ${partner.company}`;
+    }
+    coverPage += `\n`;
+  }
+
+  coverPage += `**Generated:** ${new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })}\n\n`;
+  coverPage += `---\n\n`;
+
+  return coverPage;
+}
+
+// ============================================================================
 // CPA Export Functions
 // ============================================================================
 
@@ -136,7 +179,8 @@ async function uploadFile(
  */
 export async function exportKnowledgeBase(
   taxYear: number,
-  entitySlug?: string
+  entitySlug?: string,
+  partner?: PartnerInfo | null
 ): Promise<{ success: boolean; fileUrl?: string; error?: string }> {
   try {
     const supabase = createServerSupabaseClient();
@@ -178,15 +222,13 @@ export async function exportKnowledgeBase(
       throw new Error(`Failed to fetch facts: ${error.message}`);
     }
 
-    // Format as markdown
-    let markdown = `# Knowledge Base Export\n\n`;
-    markdown += `**Tax Year:** ${taxYear}\n`;
-    markdown += `**Generated:** ${new Date().toISOString()}\n`;
+    // Format as markdown with cover page
+    let markdown = generateCoverPage('Knowledge Base', taxYear, partner);
+
     if (entitySlug) {
-      markdown += `**Entity:** ${entitySlug}\n`;
+      markdown += `**Entity Filter:** ${entitySlug}\n\n`;
     }
     markdown += `**Total Facts:** ${facts?.length || 0}\n\n`;
-    markdown += `---\n\n`;
 
     // Group by category
     const byCategory: Record<string, typeof facts> = {};
@@ -243,7 +285,8 @@ export async function exportKnowledgeBase(
  * Export tax strategies for CPA review.
  */
 export async function exportStrategies(
-  taxYear: number
+  taxYear: number,
+  partner?: PartnerInfo | null
 ): Promise<{ success: boolean; fileUrl?: string; error?: string }> {
   try {
     const supabase = createServerSupabaseClient();
@@ -270,10 +313,8 @@ export async function exportStrategies(
       throw new Error(`Failed to fetch strategies: ${error.message}`);
     }
 
-    // Format as markdown
-    let markdown = `# Tax Strategies Export\n\n`;
-    markdown += `**Tax Year:** ${taxYear}\n`;
-    markdown += `**Generated:** ${new Date().toISOString()}\n`;
+    // Format as markdown with cover page
+    let markdown = generateCoverPage('Tax Strategies', taxYear, partner);
     markdown += `**Total Strategies:** ${strategies?.length || 0}\n\n`;
 
     // Summary stats
@@ -353,7 +394,8 @@ export async function exportStrategies(
  * Export action items/alerts for CPA review.
  */
 export async function exportActionItems(
-  taxYear: number
+  taxYear: number,
+  partner?: PartnerInfo | null
 ): Promise<{ success: boolean; fileUrl?: string; error?: string }> {
   try {
     const supabase = createServerSupabaseClient();
@@ -378,10 +420,8 @@ export async function exportActionItems(
       throw new Error(`Failed to fetch alerts: ${error.message}`);
     }
 
-    // Format as markdown
-    let markdown = `# Action Items Export\n\n`;
-    markdown += `**Tax Year:** ${taxYear}\n`;
-    markdown += `**Generated:** ${new Date().toISOString()}\n`;
+    // Format as markdown with cover page
+    let markdown = generateCoverPage('Action Items', taxYear, partner);
     markdown += `**Total Items:** ${alerts?.length || 0}\n\n`;
 
     const openItems = alerts?.filter((a) => a.status === 'open') || [];
@@ -437,7 +477,8 @@ export async function exportActionItems(
  * Generate full CPA export package.
  */
 export async function generateCPAExport(
-  taxYear: number
+  taxYear: number,
+  partner?: PartnerInfo | null
 ): Promise<{
   success: boolean;
   files: { name: string; url: string }[];
@@ -447,7 +488,7 @@ export async function generateCPAExport(
   const errors: string[] = [];
 
   // Export knowledge base
-  const kbResult = await exportKnowledgeBase(taxYear);
+  const kbResult = await exportKnowledgeBase(taxYear, undefined, partner);
   if (kbResult.success && kbResult.fileUrl) {
     files.push({ name: 'Knowledge Base', url: kbResult.fileUrl });
   } else if (kbResult.error) {
@@ -455,7 +496,7 @@ export async function generateCPAExport(
   }
 
   // Export strategies
-  const stratResult = await exportStrategies(taxYear);
+  const stratResult = await exportStrategies(taxYear, partner);
   if (stratResult.success && stratResult.fileUrl) {
     files.push({ name: 'Tax Strategies', url: stratResult.fileUrl });
   } else if (stratResult.error) {
@@ -463,7 +504,7 @@ export async function generateCPAExport(
   }
 
   // Export action items
-  const actionsResult = await exportActionItems(taxYear);
+  const actionsResult = await exportActionItems(taxYear, partner);
   if (actionsResult.success && actionsResult.fileUrl) {
     files.push({ name: 'Action Items', url: actionsResult.fileUrl });
   } else if (actionsResult.error) {

@@ -329,6 +329,34 @@ export interface AccountBalance {
 }
 
 // ============================================================================
+// Partner Types
+// ============================================================================
+
+export type PartnerRole =
+  | 'cpa'
+  | 'bookkeeper'
+  | 'property-manager'
+  | 'advisor'
+  | 'attorney'
+  | 'syndic';
+
+export type PartnerStatus = 'active' | 'former';
+
+export interface Partner {
+  id: string;
+  name: string;
+  role: PartnerRole;
+  company?: string;
+  email?: string;
+  phone?: string;
+  entities?: string[];  // Array of entity IDs
+  notes?: string;
+  status: PartnerStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================================
 // API Request/Response Types
 // ============================================================================
 
@@ -438,6 +466,11 @@ export interface Database {
         Row: AccountBalance;
         Insert: Omit<AccountBalance, 'id' | 'created_at'>;
         Update: Partial<Omit<AccountBalance, 'id' | 'created_at'>>;
+      };
+      partners: {
+        Row: Partner;
+        Insert: Omit<Partner, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Partner, 'id' | 'created_at' | 'updated_at'>>;
       };
     };
   };

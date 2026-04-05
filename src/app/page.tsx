@@ -2,9 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { MetricCard } from '@/components/ui';
+import { MetricCard, Card, CardHeader } from '@/components/ui';
 import { AlertsPanel, EntityGrid, StrategiesPanel, KnowledgePanel } from '@/components/panels';
-import { Building2, Wallet, AlertCircle, PiggyBank } from 'lucide-react';
+import {
+  Building2,
+  Wallet,
+  AlertCircle,
+  PiggyBank,
+  FileText,
+  Download,
+  Cloud,
+  Loader2,
+  CheckCircle,
+  ExternalLink,
+} from 'lucide-react';
 
 interface DashboardStats {
   entities: number;
@@ -12,6 +23,12 @@ interface DashboardStats {
   openAlerts: number;
   activeStrategies: number;
   totalEstimatedSavings: number;
+}
+
+interface Partner {
+  id: string;
+  name: string;
+  company?: string;
 }
 
 export default function Dashboard() {
@@ -23,6 +40,17 @@ export default function Dashboard() {
     totalEstimatedSavings: 0,
   });
   const [loading, setLoading] = useState(true);
+
+  // CPA Packet state
+  const [packetYear, setPacketYear] = useState(new Date().getFullYear());
+  const [packetPartnerId, setPacketPartnerId] = useState<string>('');
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [generatingPacket, setGeneratingPacket] = useState(false);
+  const [packetResult, setPacketResult] = useState<{
+    success: boolean;
+    driveUrl?: string;
+    error?: string;
+  } | null>(null);
 
   useEffect(() => {
     async function fetchStats() {
@@ -52,6 +80,14 @@ export default function Dashboard() {
           activeStrategies: stratStats.byStatus?.active || 0,
           totalEstimatedSavings: stratStats.totalEstimatedSavings || 0,
         });
+
+        // Fetch CPA partners
+        const partnersRes = await fetch('/api/partners?role=cpa');
+        const partnersData = await partnersRes.json();
+        setPartners(partnersData.partners || []);
+        if (partnersData.partners?.length > 0) {
+          setPacketPartnerId(partnersData.partners[0].id);
+        }
       } catch (error) {
         console.error('Failed to fetch stats:', error);
       } finally {
@@ -60,6 +96,58 @@ export default function Dashboard() {
     }
     fetchStats();
   }, []);
+
+  // Generate year options
+  const yearOptions = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i);
+
+  // Handle CPA packet generation
+  const handleGeneratePacket = async (uploadToDrive: boolean) => {
+    setGeneratingPacket(true);
+    setPacketResult(null);
+
+    try {
+      const res = await fetch('/api/cpa-packet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taxYear: packetYear,
+          partnerId: packetPartnerId || undefined,
+          uploadToDrive,
+        }),
+      });
+
+      if (uploadToDrive) {
+        const data = await res.json();
+        if (data.success) {
+          setPacketResult({ success: true, driveUrl: data.driveUrl });
+        } else {
+          setPacketResult({ success: false, error: data.error || 'Upload failed' });
+        }
+      } else {
+        // Download the PDF
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `CPA-Packet-${packetYear}-${new Date().toISOString().slice(0, 10)}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          setPacketResult({ success: true });
+        } else {
+          const data = await res.json();
+          setPacketResult({ success: false, error: data.error || 'Download failed' });
+        }
+      }
+    } catch (error) {
+      console.error('Packet generation error:', error);
+      setPacketResult({ success: false, error: 'Failed to generate packet' });
+    } finally {
+      setGeneratingPacket(false);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -113,6 +201,125 @@ export default function Dashboard() {
         transition={{ delay: 0.25, duration: 0.4 }}
       >
         <AlertsPanel limit={5} />
+      </motion.div>
+
+      {/* CPA Packet Generator */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.28, duration: 0.4 }}
+      >
+        <Card animate={false}>
+          <CardHeader
+            label="Export"
+            title="Generate CPA Packet"
+            action={<FileText className="w-5 h-5 text-accent" />}
+          />
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+            {/* Tax Year */}
+            <div className="flex-1 min-w-[120px]">
+              <label className="block text-xs font-medium text-text-muted mb-1.5">
+                Tax Year
+              </label>
+              <select
+                value={packetYear}
+                onChange={(e) => setPacketYear(Number(e.target.value))}
+                className="w-full px-3 py-2 bg-surface-alt border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
+                disabled={generatingPacket}
+              >
+                {yearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Prepared For */}
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-xs font-medium text-text-muted mb-1.5">
+                Prepared For
+              </label>
+              <select
+                value={packetPartnerId}
+                onChange={(e) => setPacketPartnerId(e.target.value)}
+                className="w-full px-3 py-2 bg-surface-alt border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
+                disabled={generatingPacket}
+              >
+                <option value="">Select CPA...</option>
+                {partners.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                    {p.company && ` — ${p.company}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleGeneratePacket(false)}
+                disabled={generatingPacket}
+                className="btn-secondary px-4 py-2 flex items-center gap-2"
+              >
+                {generatingPacket ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                Download
+              </button>
+              <button
+                onClick={() => handleGeneratePacket(true)}
+                disabled={generatingPacket}
+                className="btn-primary px-4 py-2 flex items-center gap-2"
+              >
+                {generatingPacket ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Cloud className="w-4 h-4" />
+                )}
+                Save to Drive
+              </button>
+            </div>
+          </div>
+
+          {/* Result message */}
+          {packetResult && (
+            <div
+              className={`mt-4 p-3 rounded-lg flex items-center gap-2 ${
+                packetResult.success
+                  ? 'bg-success/10 text-success'
+                  : 'bg-danger/10 text-danger'
+              }`}
+            >
+              {packetResult.success ? (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  <span className="text-sm">
+                    CPA Packet generated successfully!
+                    {packetResult.driveUrl && (
+                      <a
+                        href={packetResult.driveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-2 underline inline-flex items-center gap-1"
+                      >
+                        Open in Drive <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="text-sm">{packetResult.error}</span>
+                </>
+              )}
+            </div>
+          )}
+        </Card>
       </motion.div>
 
       {/* Two column layout for entities and strategies */}

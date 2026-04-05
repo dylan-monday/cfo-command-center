@@ -64,14 +64,16 @@ button — make it a solid accent color or a ghost button.
   --success:         #2D8A4E;   /* Confident green */
   --success-light:   #EDFCF2;   /* Success background */
 
-  /* ─── Entity Colors ─── */
+  /* ─── Entity Colors ───
+     No red/green - those are reserved for alert status
+     Use distinct hues: teal, slate blue, violet, amber, orange, earth, ocean */
   --entity-mp:       #1A8A7D;   /* Monday + Partners — teal */
-  --entity-got:      #D94242;   /* Game of Thrones LLC — red */
+  --entity-got:      #5B6FC4;   /* Game of Thrones LLC — slate blue */
   --entity-saratoga: #7C5CFC;   /* Saratoga — violet */
   --entity-nice:     #E8A817;   /* Nice — amber */
   --entity-chippewa: #E07C24;   /* Chippewa — orange */
   --entity-hvr:      #8B6B4E;   /* Hidden Valley Ranch — earth */
-  --entity-personal: #2D8A4E;   /* Personal — green */
+  --entity-personal: #4A90A4;   /* Personal — ocean blue */
 
   /* ─── Shadows ─── */
   --shadow-sm:       0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.03);
@@ -93,17 +95,20 @@ button — make it a solid accent color or a ghost button.
 ## Typography
 
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   --font-body: 'Urbanist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-chat: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
 }
 ```
 
-**Urbanist** is the body font. It's modern, geometric, warm, and has excellent legibility across weights. It replaces DM Sans.
+**Urbanist** is the UI chrome font (navigation, headers, labels, buttons, cards). It's modern, geometric, warm, and has excellent legibility across weights.
 
-**JetBrains Mono** remains the data font for all financial values, dates, and technical labels.
+**Source Sans 3** is the chat message font. Used at 14px, weight 400 for body, 600 for emphasis, line-height 1.6. Both user and CFO messages use this font for better readability in conversational context.
+
+**JetBrains Mono** remains the data font for all financial values, dollar amounts, dates, percentages, and technical labels.
 
 ### Type Scale
 

@@ -22,7 +22,7 @@ Later addenda supersede earlier ones where they conflict. Seed data is cumulativ
 - **File Storage:** Supabase Storage
 - **Email:** Gmail API (googleapis package) from dylan@mondayandpartners.com
 - **Hosting:** Vercel Pro, domain: cfo.mondayandpartners.com
-- **Fonts:** DM Sans (body), JetBrains Mono (data/labels)
+- **Fonts:** Urbanist (UI chrome), Source Sans 3 (chat messages), JetBrains Mono (data/values)
 
 ## Build Phases (execute in order)
 1. Scaffold Next.js app + install deps + configure env vars
@@ -37,15 +37,24 @@ Later addenda supersede earlier ones where they conflict. Seed data is cumulativ
 10. Iterate — system is never "done"
 
 ## Design System (LIGHT theme)
-- bg: #FAFAF9 (warm white)
+- bg: #EDEBE7 (warm putty)
 - surface: #FFFFFF
-- border: #E5E5E0
-- text: #1A1A1F
+- border: rgba(0, 0, 0, 0.06)
+- text: #0D0C0B
 - accent: #1A8A7D (teal-green)
-- warning: #D4930D
-- danger: #CC3333
+- warning: #E8A817
+- danger: #D94242
 - success: #2D8A4E
 - NO dark mode. NO gradients. Warm, not cold. Dense but breathable.
+
+### Entity Colors (no red/green — reserved for alerts)
+- mp: #1A8A7D (teal)
+- got: #5B6FC4 (slate blue)
+- saratoga: #7C5CFC (violet)
+- nice: #E8A817 (amber)
+- chippewa: #E07C24 (orange)
+- hvr: #8B6B4E (earth)
+- personal: #4A90A4 (ocean blue)
 
 ## Voice
 The AI talks like a smart friend who knows tax law. Direct, specific dollar amounts, opinionated, occasionally funny. Never condescending. "You should do this" not "you may want to consider." Always concrete numbers, not vague descriptions.

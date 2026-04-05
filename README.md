@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CFO Command Center
+
+A conversational financial operating system built with Next.js, Supabase, and Claude AI.
+
+## Overview
+
+Personal CFO assistant that manages multiple business entities and properties through a chat interface + dynamic dashboard + persistent knowledge base + proactive alerts.
+
+**Entities managed:**
+- M+P (S-Corp)
+- Game of Thrones LLC (SF rental)
+- Saratoga (NOLA duplex)
+- Nice apartment (France)
+- Chippewa (primary residence)
+- Hidden Valley Ranch (NM land)
+- Personal/investment accounts
+
+## Stack
+
+- **Frontend:** Next.js 14+ (App Router), TypeScript, Tailwind CSS
+- **Backend:** Next.js API Routes
+- **Database:** Supabase (PostgreSQL) — 12 tables
+- **AI:** Claude API (Sonnet) via @anthropic-ai/sdk
+- **Email:** Gmail API for notifications
+- **Hosting:** Vercel Pro at cfo.mondayandpartners.com
+
+## Design System
+
+Light theme with warm minimalism. See `specs/design-guidance.md` for full spec.
+
+- **Background:** #EDEBE7 (warm putty)
+- **Accent:** #1A8A7D (teal-green)
+- **Fonts:**
+  - Urbanist (UI chrome)
+  - Source Sans 3 (chat messages)
+  - JetBrains Mono (data/values)
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Fill in Supabase, Anthropic, Google API keys
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Seed database
+npm run seed
+
+# Production build
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Key Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Chat Interface:** Streaming responses with conversation persistence
+- **Knowledge Base:** Facts extracted from conversations, documents, and manual entry
+- **Property Manager Mode:** Operational context for rental properties
+- **CPA Packet Generator:** PDF export with Google Drive integration
+- **Proactive Alerts:** Deadlines, questions, and action items
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Documentation
 
-## Learn More
+- `CLAUDE.md` — Project instructions for Claude Code
+- `specs/design-guidance.md` — Complete design system spec
+- `specs/LAUNCH-GUIDE.md` — Deployment checklist
+- `backlog.md` — Feature roadmap and completed items
 
-To learn more about Next.js, take a look at the following resources:
+## API Routes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `/api/chat` — Conversational endpoint with streaming
+- `/api/entities` — Entity management
+- `/api/knowledge` — Knowledge base CRUD
+- `/api/alerts` — Proactive queue items
+- `/api/strategies` — Tax strategies
+- `/api/cpa-packet` — PDF generation
+- `/api/cron/*` — Scheduled jobs (drive sweep, deadline check, etc.)

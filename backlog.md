@@ -56,6 +56,23 @@
 - [x] Added green dot next to "DiBona" in sidebar
 - [x] Removed Help nav item
 
+### Dashboard Design Fixes (April 2026)
+- [x] Made Header mobile-only (removed empty white bar on desktop)
+- [x] Made AlertsPanel collapsible with visual count indicator
+- [x] Fixed CPA Packet card layout (2x2 grid, buttons full-width inside card)
+- [x] Changed entity colors to avoid red/green (reserved for alerts)
+  - GOT: #5B6FC4 (slate blue, was red)
+  - Personal: #4A90A4 (ocean blue, was green)
+- [x] Added solid card variants (.card-gradient, .card-accent, etc.)
+- [x] Fixed RLS bypass for single-user app (service role key)
+
+### Chat Bug Fixes (April 2026)
+- [x] Fixed conversation loading — GET /api/chat now returns messages when conversationId provided
+- [x] Verified conversation context is properly sent to Claude via buildChatMessages()
+- [x] Added Source Sans 3 font for chat messages
+- [x] Created --font-chat CSS variable for chat-specific typography
+- [x] Font hierarchy: Urbanist (UI), Source Sans 3 (chat), JetBrains Mono (data)
+
 ---
 
 ## Roadmap

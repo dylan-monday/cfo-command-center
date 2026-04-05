@@ -221,70 +221,72 @@ export default function Dashboard() {
           transition={{ delay: 0.3, duration: 0.4 }}
         >
           <Card animate={false}>
-          <CardHeader
-            label="Export"
-            title="Generate CPA Packet"
-            action={<FileText className="w-5 h-5 text-accent" />}
-          />
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
-            {/* Tax Year */}
-            <div className="flex-1 min-w-[120px]">
-              <label className="block text-xs font-medium text-text-muted mb-1.5">
-                Tax Year
-              </label>
-              <select
-                value={packetYear}
-                onChange={(e) => setPacketYear(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-surface-alt border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
-                disabled={generatingPacket}
-              >
-                {yearOptions.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
+            <CardHeader
+              label="Export"
+              title="Generate CPA Packet"
+              action={<FileText className="w-5 h-5 text-accent" />}
+            />
+            {/* Form fields */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              {/* Tax Year */}
+              <div>
+                <label className="block text-xs font-medium text-text-muted mb-1.5">
+                  Tax Year
+                </label>
+                <select
+                  value={packetYear}
+                  onChange={(e) => setPacketYear(Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-surface-alt border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
+                  disabled={generatingPacket}
+                >
+                  {yearOptions.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Prepared For */}
+              <div>
+                <label className="block text-xs font-medium text-text-muted mb-1.5">
+                  Prepared For
+                </label>
+                <select
+                  value={packetPartnerId}
+                  onChange={(e) => setPacketPartnerId(e.target.value)}
+                  className="w-full px-3 py-2 bg-surface-alt border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
+                  disabled={generatingPacket}
+                >
+                  <option value="">Select CPA...</option>
+                  {partners.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                      {p.company && ` — ${p.company}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            {/* Prepared For */}
-            <div className="flex-1 min-w-[180px]">
-              <label className="block text-xs font-medium text-text-muted mb-1.5">
-                Prepared For
-              </label>
-              <select
-                value={packetPartnerId}
-                onChange={(e) => setPacketPartnerId(e.target.value)}
-                className="w-full px-3 py-2 bg-surface-alt border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
-                disabled={generatingPacket}
-              >
-                <option value="">Select CPA...</option>
-                {partners.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                    {p.company && ` — ${p.company}`}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-2">
+            {/* Action Buttons - full width row */}
+            <div className="flex gap-3">
               <button
                 onClick={() => handleGeneratePacket(false)}
                 disabled={generatingPacket}
-                className="btn-primary px-4 py-2 flex items-center gap-2"
+                className="btn-primary flex-1 py-2.5 flex items-center justify-center gap-2"
               >
                 {generatingPacket ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Download className="w-4 h-4" />
                 )}
-                Download
+                Download PDF
               </button>
               <button
                 onClick={() => handleGeneratePacket(true)}
                 disabled={generatingPacket}
-                className="btn-secondary px-4 py-2 flex items-center gap-2"
+                className="btn-secondary flex-1 py-2.5 flex items-center justify-center gap-2"
               >
                 {generatingPacket ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -294,43 +296,42 @@ export default function Dashboard() {
                 Save to Drive
               </button>
             </div>
-          </div>
 
-          {/* Result message */}
-          {packetResult && (
-            <div
-              className={`mt-4 p-3 rounded-lg flex items-center gap-2 ${
-                packetResult.success
-                  ? 'bg-success/10 text-success'
-                  : 'bg-danger/10 text-danger'
-              }`}
-            >
-              {packetResult.success ? (
-                <>
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="text-sm">
-                    CPA Packet generated successfully!
-                    {packetResult.driveUrl && (
-                      <a
-                        href={packetResult.driveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-2 underline inline-flex items-center gap-1"
-                      >
-                        Open in Drive <ExternalLink className="w-3 h-3" />
-                      </a>
-                    )}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <AlertCircle className="w-4 h-4" />
-                  <span className="text-sm">{packetResult.error}</span>
-                </>
-              )}
-            </div>
-          )}
-        </Card>
+            {/* Result message */}
+            {packetResult && (
+              <div
+                className={`mt-4 p-3 rounded-lg flex items-center gap-2 ${
+                  packetResult.success
+                    ? 'bg-success-light text-success'
+                    : 'bg-danger-light text-danger'
+                }`}
+              >
+                {packetResult.success ? (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="text-sm">
+                      CPA Packet generated!
+                      {packetResult.driveUrl && (
+                        <a
+                          href={packetResult.driveUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 underline inline-flex items-center gap-1"
+                        >
+                          Open in Drive <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="text-sm">{packetResult.error}</span>
+                  </>
+                )}
+              </div>
+            )}
+          </Card>
         </motion.div>
       </div>
 

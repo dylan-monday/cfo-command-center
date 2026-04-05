@@ -8,12 +8,13 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuToggle }: HeaderProps) {
+  // Only show on mobile - desktop sidebar has all navigation
   return (
-    <header className="h-14 border-b border-border bg-surface flex items-center justify-between px-4">
+    <header className="md:hidden h-14 border-b border-border bg-surface flex items-center justify-between px-4">
       {/* Mobile menu button */}
       <button
         onClick={onMenuToggle}
-        className="md:hidden p-2 -ml-2 text-text-secondary hover:text-text"
+        className="p-2 -ml-2 text-text-secondary hover:text-text"
         aria-label="Toggle menu"
       >
         <svg
@@ -28,16 +29,11 @@ export function Header({ onMenuToggle }: HeaderProps) {
         </svg>
       </button>
 
-      {/* Desktop: Just a placeholder, logo is in sidebar */}
-      <div className="hidden md:block" />
+      {/* Mobile logo */}
+      <span className="font-semibold text-text">CFO</span>
 
-      {/* Center: Navigation tabs (optional, can be empty) */}
-      <div className="flex-1" />
-
-      {/* Right: Reserved for future quick actions */}
-      <div className="flex items-center gap-3">
-        {/* Empty for now - could add Upload button, notification bell, etc. */}
-      </div>
+      {/* Spacer */}
+      <div className="w-9" />
     </header>
   );
 }

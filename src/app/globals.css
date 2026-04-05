@@ -39,14 +39,16 @@
   --success:         #2D8A4E;   /* Confident green */
   --success-light:   #EDFCF2;   /* Success background */
 
-  /* ─── Entity Colors ─── */
+  /* ─── Entity Colors ───
+     No red/green - those are reserved for alert status
+     Use distinct hues: teal, violet, amber, orange, earth, blue, indigo */
   --entity-mp:       #1A8A7D;   /* Monday + Partners — teal */
-  --entity-got:      #D94242;   /* Game of Thrones LLC — red */
+  --entity-got:      #5B6FC4;   /* Game of Thrones LLC — slate blue */
   --entity-saratoga: #7C5CFC;   /* Saratoga — violet */
   --entity-nice:     #E8A817;   /* Nice — amber */
   --entity-chippewa: #E07C24;   /* Chippewa — orange */
   --entity-hvr:      #8B6B4E;   /* Hidden Valley Ranch — earth */
-  --entity-personal: #2D8A4E;   /* Personal — green */
+  --entity-personal: #4A90A4;   /* Personal — ocean blue */
 
   /* ─── Shadows — Layered compositing ─── */
   --shadow-sm:       0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.03);
@@ -148,6 +150,43 @@ body {
 .card-compact:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
+}
+
+/* Metric card variants — solid fills, no gradients */
+.card-gradient {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  box-shadow: 0 4px 16px rgba(26, 138, 125, 0.25);
+}
+
+.card-accent {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  box-shadow: 0 4px 16px rgba(26, 138, 125, 0.25);
+}
+
+.card-success {
+  background: var(--success);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  box-shadow: 0 4px 16px rgba(45, 138, 78, 0.25);
+}
+
+.card-danger {
+  background: var(--danger);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  box-shadow: 0 4px 16px rgba(217, 66, 66, 0.25);
+}
+
+.text-text-on-gradient {
+  color: white;
 }
 
 /* Feature cards — elevated style for dashboard metrics */
@@ -261,6 +300,23 @@ body {
   font-weight: 600;
   color: var(--text);
   letter-spacing: -0.01em;
+}
+
+/* Metric card typography */
+.metric-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 /* Hero metric — largest number on screen */

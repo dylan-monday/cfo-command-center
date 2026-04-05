@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { motion } from 'motion/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ChatMessage, ChatInput } from '@/components/chat';
 
 interface Message {
@@ -18,14 +18,43 @@ const SUGGESTED_PROMPTS = [
   'What money am I leaving on the table?',
 ];
 
-export default function ChatPage() {
+function ChatPageContent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [entitySlug, setEntitySlug] = useState<string | null>(null);
   const [entities, setEntities] = useState<{ slug: string; name: string }[]>([]);
+  const [autoSendPending, setAutoSendPending] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Check for property review context from URL or sessionStorage
+  useEffect(() => {
+    // Check URL params for entity
+    const urlEntity = searchParams.get('entity');
+    if (urlEntity) {
+      setEntitySlug(urlEntity);
+    }
+
+    // Check sessionStorage for property review context
+    const storedContext = sessionStorage.getItem('propertyReviewContext');
+    if (storedContext) {
+      try {
+        const context = JSON.parse(storedContext);
+        if (context.entitySlug) {
+          setEntitySlug(context.entitySlug);
+        }
+        if (context.prompt) {
+          setAutoSendPending(context.prompt);
+        }
+        // Clear the stored context
+        sessionStorage.removeItem('propertyReviewContext');
+      } catch {
+        console.error('Failed to parse property review context');
+      }
+    }
+  }, [searchParams]);
 
   // Fetch entities for context selector
   useEffect(() => {
@@ -46,7 +75,8 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = async (message: string) => {
+  // Memoized handleSend to use in auto-send effect
+  const handleSend = useCallback(async (message: string) => {
     // Add user message immediately
     const userMessage: Message = {
       role: 'user',
@@ -130,7 +160,15 @@ export default function ChatPage() {
     } finally {
       setIsStreaming(false);
     }
-  };
+  }, [conversationId, entitySlug, router]);
+
+  // Auto-send property review prompt when pending and entities loaded
+  useEffect(() => {
+    if (autoSendPending && entities.length > 0 && !isStreaming && messages.length === 0) {
+      handleSend(autoSendPending);
+      setAutoSendPending(null);
+    }
+  }, [autoSendPending, entities.length, isStreaming, messages.length, handleSend]);
 
   return (
     <div className="h-full flex flex-col bg-bg">
@@ -200,5 +238,17 @@ export default function ChatPage() {
       {/* Input area */}
       <ChatInput onSend={handleSend} disabled={isStreaming} />
     </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-full flex items-center justify-center bg-bg">
+        <div className="animate-pulse text-text-muted">Loading...</div>
+      </div>
+    }>
+      <ChatPageContent />
+    </Suspense>
   );
 }

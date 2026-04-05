@@ -2,6 +2,28 @@
 
 ## Completed
 
+### Design Elevation (April 2026)
+- [x] Background: Changed from #F8F9FA to #EDEBE7 (warm putty)
+- [x] Accent: Changed from #FF934F (orange) to #1A8A7D (teal)
+- [x] Updated all semantic colors to match design-guidance.md spec
+- [x] Removed all gradients (btn-primary, card-gradient, nav-item-active, etc.)
+- [x] Badge overhaul: text-only, color carries meaning, JetBrains Mono 10px lowercase
+- [x] Shadow system: layered compositing with two shadow values
+- [x] Entity dots: rounded squares (8px, radius 3px)
+
+### Property Manager Mode (April 2026)
+- [x] Added PROPERTY_MANAGEMENT_CONTEXT to context-builder.ts
+- [x] System prompt includes property operational context for property entities
+- [x] Utility bill ranges (SF Water, PG&E, NOLA SWBNO, Delta Gas, France)
+- [x] PM fee verification formulas (Morley 7%, Satsuma 10%)
+- [x] Repair authorization limits (18th St: $250)
+- [x] Distribution reconciliation checklist
+- [x] Lease renewal tracking (90-day flag)
+- [x] PM reliability notes (Satsuma: skeptical, Morley: trustworthy)
+- [x] France property specifics (CCF mortgage, EUR tracking, 3-month runway alert)
+- [x] "Run Property Review" button on entity cards for property entities
+- [x] Auto-send property review prompt when navigating from dashboard
+
 ### Google Drive Inbox Sweep
 - [x] Created CFO Inbox folder integration
 - [x] Cron job `/api/cron/drive-sweep` runs every 30 minutes
@@ -33,66 +55,6 @@
 - [x] Removed "Connected" text from header
 - [x] Added green dot next to "DiBona" in sidebar
 - [x] Removed Help nav item
-
----
-
-## In Progress
-
-### Design Elevation (per specs/design-guidance.md)
-
-Current implementation diverges from spec. Required changes:
-
-**Color Palette:**
-- [ ] Background: Change from #F8F9FA to #EDEBE7 (warm putty)
-- [ ] Accent: Change from #FF934F (orange) to #1A8A7D (teal)
-- [ ] Update all semantic colors to match spec
-- [ ] Update entity colors to spec values
-
-**Remove Gradients:**
-- [ ] btn-primary: solid accent instead of gradient
-- [ ] card-gradient: remove entirely or convert to solid
-- [ ] card-accent/success/danger: solid fills, no gradients
-- [ ] nav-item-active: solid accent-light background
-- [ ] gradient-primary utility: remove or deprecate
-- [ ] progress-fill: solid accent instead of gradient
-
-**Badge Overhaul:**
-- [ ] Convert from pill backgrounds to text-only
-- [ ] Color carries meaning, no background
-- [ ] Use JetBrains Mono 10px lowercase
-
-**Shadow System:**
-- [ ] Update to layered compositing (two shadow values)
-- [ ] --shadow-sm, --shadow-md, --shadow-lg, --shadow-hover
-
-**Entity Dots:**
-- [ ] Change from circle (10px) to rounded square (8px, radius 3px)
-
----
-
-## Pending
-
-### Property Manager Mode
-
-Add property management operational context when property entity is selected
-(got, saratoga, nice, chippewa, hvr):
-
-**System Prompt Additions:**
-- [ ] Utility bill ranges (SF Water $300-350, PG&E $85-95, etc.)
-- [ ] PM fee verification (Morley 7% of $13,750, Satsuma 10%)
-- [ ] Repair authorization limits (18th St: $250)
-- [ ] Distribution reconciliation rules
-- [ ] Lease renewal tracking (90-day flag)
-- [ ] Tenant payment anomaly detection
-- [ ] PM reliability notes:
-  - Satsuma: "Be skeptical. They pay without questioning, non-standard reporting"
-  - Morley: "Generally reliable and trustworthy. Clean reporting"
-- [ ] France property: CCF mortgage tracking, EUR amounts, 3-month runway alert
-
-**Dashboard Quick Action:**
-- [ ] "Property Review" button for each property entity card
-- [ ] Starts new chat scoped to that entity
-- [ ] Pre-populated prompt: "Run a monthly review for [property name]..."
 
 ---
 

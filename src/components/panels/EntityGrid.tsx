@@ -1,9 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Card, CardHeader, EntityDot, SkeletonCard } from '@/components/ui';
-import { ChevronDown, ChevronRight, Building2, Wallet, Target, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronRight, Building2, Wallet, Target, AlertCircle, ClipboardCheck } from 'lucide-react';
+
+// Property entities that get the Property Review quick action
+const PROPERTY_ENTITIES = ['got', 'saratoga', 'nice', 'chippewa', 'hvr'];
 
 interface Account {
   id: string;
@@ -30,10 +34,22 @@ interface EntityWithDetails {
 }
 
 export function EntityGrid() {
+  const router = useRouter();
   const [entities, setEntities] = useState<EntityWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loadingDetails, setLoadingDetails] = useState<string | null>(null);
+
+  // Start a property review chat
+  const startPropertyReview = (entity: EntityWithDetails) => {
+    // Store the review context in sessionStorage for the chat page to pick up
+    sessionStorage.setItem('propertyReviewContext', JSON.stringify({
+      entitySlug: entity.slug,
+      entityName: entity.name,
+      prompt: `Run a monthly review for ${entity.name}. Check all open items, flag anything that needs attention, and tell me what documents you need from me.`
+    }));
+    router.push(`/chat?entity=${entity.slug}`);
+  };
 
   useEffect(() => {
     async function fetchEntities() {
@@ -233,6 +249,19 @@ export function EntityGrid() {
                               Notes
                             </span>
                             <p className="text-sm text-text-secondary mt-1">{entity.notes}</p>
+                          </div>
+                        )}
+
+                        {/* Property Review quick action */}
+                        {PROPERTY_ENTITIES.includes(entity.slug) && (
+                          <div>
+                            <button
+                              onClick={() => startPropertyReview(entity)}
+                              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors shadow-sm"
+                            >
+                              <ClipboardCheck className="w-4 h-4" />
+                              Run Property Review
+                            </button>
                           </div>
                         )}
 

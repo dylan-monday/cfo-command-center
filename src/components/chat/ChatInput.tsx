@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { motion } from 'motion/react';
+import { Send, Loader2 } from 'lucide-react';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -42,9 +43,9 @@ export function ChatInput({
   };
 
   return (
-    <div className="border-t border-border bg-surface p-4">
-      <div className="max-w-3xl mx-auto flex gap-3 items-end">
-        <div className="flex-1 relative">
+    <div className="border-t border-border bg-surface/80 backdrop-blur-sm p-4">
+      <div className="max-w-3xl mx-auto">
+        <div className="flex gap-3 items-end bg-bg rounded-2xl border border-border p-2 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all">
           <textarea
             ref={textareaRef}
             value={message}
@@ -53,29 +54,27 @@ export function ChatInput({
             disabled={disabled}
             placeholder={placeholder}
             rows={1}
-            className="w-full resize-none rounded-lg border border-border bg-bg px-4 py-3 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 resize-none bg-transparent px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
           />
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleSubmit}
+            disabled={disabled || !message.trim()}
+            className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-text-on-gradient disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md disabled:shadow-none"
+          >
+            {disabled ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
+          </motion.button>
         </div>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleSubmit}
-          disabled={disabled || !message.trim()}
-          className="px-4 py-3 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {disabled ? (
-            <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>Thinking...</span>
-            </span>
-          ) : (
-            'Send'
-          )}
-        </motion.button>
+        <p className="text-[11px] text-text-muted text-center mt-3">
+          Press <kbd className="px-1.5 py-0.5 rounded bg-surface-alt border border-border font-mono text-[10px]">Enter</kbd> to send,{' '}
+          <kbd className="px-1.5 py-0.5 rounded bg-surface-alt border border-border font-mono text-[10px]">Shift+Enter</kbd> for new line
+        </p>
       </div>
-      <p className="text-[10px] text-text-muted text-center mt-2">
-        Press Enter to send, Shift+Enter for new line
-      </p>
     </div>
   );
 }

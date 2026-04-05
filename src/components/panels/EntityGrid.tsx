@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
 import { Card, CardHeader, EntityDot, SkeletonCard } from '@/components/ui';
+import { ChevronRight, Building2 } from 'lucide-react';
 
 interface EntityWithCounts {
   id: string;
@@ -40,7 +41,10 @@ export function EntityGrid() {
   if (loading) {
     return (
       <div>
-        <div className="section-label mb-3">Entity Map</div>
+        <div className="flex items-center gap-2 mb-4">
+          <Building2 className="w-5 h-5 text-text-muted" />
+          <span className="section-label">Entity Map</span>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((i) => (
             <SkeletonCard key={i} />
@@ -62,7 +66,10 @@ export function EntityGrid() {
 
   return (
     <div>
-      <div className="section-label mb-3">Entity Map</div>
+      <div className="flex items-center gap-2 mb-4">
+        <Building2 className="w-5 h-5 text-text-muted" />
+        <span className="section-label">Entity Map</span>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {entities.map((entity, index) => (
           <motion.div
@@ -72,28 +79,38 @@ export function EntityGrid() {
             transition={{ delay: index * 0.05 + 0.1, duration: 0.3 }}
           >
             <Link href={`/entity/${entity.slug}`}>
-              <div className="card card-hover cursor-pointer">
+              <div className="card card-hover cursor-pointer group">
                 <div className="flex items-start gap-3">
-                  <EntityDot slug={entity.slug} size="lg" />
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: `color-mix(in srgb, var(--entity-${entity.slug}) 15%, transparent)` }}
+                  >
+                    <EntityDot slug={entity.slug} size="lg" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="card-title truncate">{entity.name}</h3>
+                    <h3 className="card-title truncate group-hover:text-accent transition-colors">
+                      {entity.name}
+                    </h3>
                     <p className="text-xs text-text-muted mt-0.5">
                       {typeLabels[entity.type] || entity.type}
                     </p>
                   </div>
-                  {entity._counts.openAlerts > 0 && (
-                    <span className="text-xs font-data text-danger bg-danger-light px-1.5 py-0.5 rounded">
-                      {entity._counts.openAlerts}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {entity._counts.openAlerts > 0 && (
+                      <span className="badge badge-at-risk">
+                        {entity._counts.openAlerts}
+                      </span>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
                 </div>
-                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/50">
-                  <div className="text-center">
-                    <div className="font-data text-sm font-medium">{entity._counts.accounts}</div>
+                <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border">
+                  <div>
+                    <div className="font-data text-lg font-semibold">{entity._counts.accounts}</div>
                     <div className="metric-label">Accounts</div>
                   </div>
-                  <div className="text-center">
-                    <div className="font-data text-sm font-medium">{entity._counts.strategies}</div>
+                  <div>
+                    <div className="font-data text-lg font-semibold">{entity._counts.strategies}</div>
                     <div className="metric-label">Strategies</div>
                   </div>
                 </div>

@@ -5,14 +5,14 @@ interface EntityDotProps {
 
 export function EntityDot({ slug, size = 'md' }: EntityDotProps) {
   const sizeMap = {
-    sm: 'w-1.5 h-1.5',
-    md: 'w-2 h-2',
-    lg: 'w-3 h-3',
+    sm: 'w-2 h-2',
+    md: 'w-2.5 h-2.5',
+    lg: 'w-3.5 h-3.5',
   };
 
   return (
     <span
-      className={`entity-dot ${sizeMap[size]}`}
+      className={`${size === 'lg' ? 'entity-dot-lg' : 'entity-dot'} ${sizeMap[size]}`}
       style={{ background: `var(--entity-${slug})` }}
     />
   );

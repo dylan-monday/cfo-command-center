@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { MetricCard } from '@/components/ui';
 import { AlertsPanel, EntityGrid, StrategiesPanel } from '@/components/panels';
+import { Building2, Wallet, AlertCircle, PiggyBank } from 'lucide-react';
 
 interface DashboardStats {
   entities: number;
@@ -61,71 +62,75 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-8">
       {/* Page header */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
       >
         <h1 className="page-title">Dashboard</h1>
-        <p className="text-text-secondary text-sm mt-1">
+        <p className="text-text-secondary mt-2">
           Your financial command center at a glance
         </p>
       </motion.div>
 
-      {/* Metrics strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Metrics strip - with featured gradient card */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Entities"
           value={stats.entities}
           delay={0.05}
+          icon={<Building2 className="w-5 h-5" />}
         />
         <MetricCard
           label="Accounts"
           value={stats.accounts}
           delay={0.1}
+          icon={<Wallet className="w-5 h-5" />}
         />
         <MetricCard
           label="Open Alerts"
           value={stats.openAlerts}
           variant={stats.openAlerts > 5 ? 'danger' : stats.openAlerts > 0 ? 'warning' : 'default'}
           delay={0.15}
+          icon={<AlertCircle className="w-5 h-5" />}
         />
         <MetricCard
-          label="Est. Savings"
+          label="Est. Tax Savings"
           value={stats.totalEstimatedSavings}
           format="currency"
-          variant="accent"
+          variant="gradient"
           delay={0.2}
+          icon={<PiggyBank className="w-5 h-5" />}
         />
       </div>
 
-      {/* Alerts panel - full width if there are critical items */}
+      {/* Alerts panel - full width for critical items */}
       <motion.div
-        initial={{ opacity: 0, y: 8 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25, duration: 0.3 }}
+        transition={{ delay: 0.25, duration: 0.4 }}
       >
         <AlertsPanel limit={5} />
       </motion.div>
 
-      {/* Two column layout */}
+      {/* Two column layout for entities and strategies */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Entity map */}
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.3 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
         >
           <EntityGrid />
         </motion.div>
 
         {/* Strategies panel */}
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.3 }}
+          transition={{ delay: 0.35, duration: 0.4 }}
         >
           <StrategiesPanel limit={6} />
         </motion.div>

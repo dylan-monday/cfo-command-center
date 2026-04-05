@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Card, CardHeader, StatusBadge, EntityBadge, SkeletonList } from '@/components/ui';
+import { Target, TrendingUp, Flag, ChevronRight } from 'lucide-react';
 import type { StrategyStatus, StrategyImpact } from '@/types';
 
 interface Strategy {
@@ -58,16 +59,29 @@ export function StrategiesPanel({ entitySlug, limit = 5 }: StrategiesPanelProps)
     fetchStrategies();
   }, [entitySlug, limit]);
 
-  const impactBadge: Record<StrategyImpact, string> = {
-    high: 'bg-success-light text-success-text',
-    medium: 'bg-warning-light text-warning-text',
-    low: 'bg-surface-alt text-text-muted',
+  const impactStyles: Record<StrategyImpact, { badge: string; icon: string }> = {
+    high: {
+      badge: 'bg-success-light text-success-text border border-success/20',
+      icon: 'text-success',
+    },
+    medium: {
+      badge: 'bg-warning-light text-warning-text border border-warning/20',
+      icon: 'text-warning',
+    },
+    low: {
+      badge: 'bg-surface-alt text-text-muted border border-border',
+      icon: 'text-text-muted',
+    },
   };
 
   if (loading) {
     return (
       <Card animate={false}>
-        <CardHeader label="Tax Optimization" title="Active Strategies" />
+        <CardHeader
+          label="Tax Optimization"
+          title="Active Strategies"
+          action={<Target className="w-5 h-5 text-text-muted" />}
+        />
         <SkeletonList rows={4} />
       </Card>
     );
@@ -75,43 +89,48 @@ export function StrategiesPanel({ entitySlug, limit = 5 }: StrategiesPanelProps)
 
   return (
     <Card>
-      <CardHeader label="Tax Optimization" title="Active Strategies" />
+      <CardHeader
+        label="Tax Optimization"
+        title="Active Strategies"
+        action={<Target className="w-5 h-5 text-accent" />}
+      />
 
-      {/* Quick stats */}
+      {/* Quick stats bar */}
       {stats && (
-        <div className="flex items-center gap-4 mb-4 pb-4 border-b border-border/50">
-          <div>
-            <span className="font-data text-sm font-medium text-success">
-              {stats.byStatus.active}
-            </span>
-            <span className="text-xs text-text-muted ml-1">active</span>
-          </div>
-          <div>
-            <span className="font-data text-sm font-medium text-danger">
-              {stats.byStatus.atRisk}
-            </span>
-            <span className="text-xs text-text-muted ml-1">at risk</span>
-          </div>
-          <div>
-            <span className="font-data text-sm font-medium text-warning">
-              {stats.byStatus.review}
-            </span>
-            <span className="text-xs text-text-muted ml-1">review</span>
+        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-success" />
+              <span className="font-data text-sm font-semibold">{stats.byStatus.active}</span>
+              <span className="text-xs text-text-muted">active</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-danger" />
+              <span className="font-data text-sm font-semibold">{stats.byStatus.atRisk}</span>
+              <span className="text-xs text-text-muted">at risk</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-warning" />
+              <span className="font-data text-sm font-semibold">{stats.byStatus.review}</span>
+              <span className="text-xs text-text-muted">review</span>
+            </div>
           </div>
           {stats.cpaFlagCount > 0 && (
-            <div className="ml-auto">
-              <span className="text-xs text-text-muted">
-                <span className="font-data">{stats.cpaFlagCount}</span> CPA items
-              </span>
+            <div className="flex items-center gap-1 text-accent">
+              <Flag className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium">{stats.cpaFlagCount} CPA</span>
             </div>
           )}
         </div>
       )}
 
       {/* Strategy list */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {strategies.length === 0 ? (
-          <p className="text-text-muted text-sm">No strategies found.</p>
+          <div className="text-center py-6">
+            <Target className="w-8 h-8 text-text-muted mx-auto mb-2" />
+            <p className="text-text-muted text-sm">No strategies found.</p>
+          </div>
         ) : (
           strategies.map((strategy, index) => (
             <motion.div
@@ -119,38 +138,40 @@ export function StrategiesPanel({ entitySlug, limit = 5 }: StrategiesPanelProps)
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.03 }}
-              className="flex items-start gap-3"
+              className="p-3 rounded-lg border border-border hover:border-border-active hover:bg-surface-hover transition-all cursor-pointer group"
             >
-              <span
-                className={`px-1.5 py-0.5 rounded text-[9px] font-data uppercase ${
-                  impactBadge[strategy.impact]
-                }`}
-              >
-                {strategy.impact}
-              </span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium truncate">{strategy.name}</span>
-                  <StatusBadge status={strategy.status} />
-                  {strategy.cpa_flag && (
-                    <span className="text-[9px] font-data text-accent bg-accent-light px-1 rounded">
-                      CPA
-                    </span>
-                  )}
+              <div className="flex items-start gap-3">
+                <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${
+                  strategy.impact === 'high' ? 'bg-success-light' :
+                  strategy.impact === 'medium' ? 'bg-warning-light' : 'bg-surface-alt'
+                }`}>
+                  <TrendingUp className={`w-4 h-4 ${impactStyles[strategy.impact].icon}`} />
                 </div>
-                <div className="flex items-center gap-2 mt-0.5">
-                  {strategy.entities && (
-                    <EntityBadge slug={strategy.entities.slug} name={strategy.entities.name} />
-                  )}
-                  {strategy.estimated_savings && (
-                    <>
-                      <span className="text-text-faint">·</span>
-                      <span className="small-data">
-                        ~${strategy.estimated_savings.toLocaleString()}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-semibold truncate">{strategy.name}</span>
+                    <StatusBadge status={strategy.status} />
+                    {strategy.cpa_flag && (
+                      <span className="badge text-[10px] px-2 py-0.5 bg-accent-light text-accent-text">
+                        CPA
                       </span>
-                    </>
-                  )}
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    {strategy.entities && (
+                      <EntityBadge slug={strategy.entities.slug} name={strategy.entities.name} />
+                    )}
+                    {strategy.estimated_savings && (
+                      <>
+                        <span className="text-text-faint">·</span>
+                        <span className="text-xs font-medium text-success">
+                          ~${strategy.estimated_savings.toLocaleString()} savings
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
+                <ChevronRight className="w-4 h-4 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity mt-2" />
               </div>
             </motion.div>
           ))

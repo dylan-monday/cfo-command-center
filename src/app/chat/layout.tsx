@@ -82,8 +82,8 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
         {/* Logo area */}
         <div className="p-4 border-b border-border">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center">
-              <span className="text-base font-bold text-text-on-gradient">D</span>
+            <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center">
+              <span className="text-base font-bold text-white">D</span>
             </div>
             <div>
               <div className="flex items-center gap-1.5">

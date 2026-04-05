@@ -106,15 +106,15 @@ export function ConversationList({ onNewChat }: ConversationListProps) {
                     <div
                       className={`p-3 rounded-xl cursor-pointer transition-all mb-1 group ${
                         isActive
-                          ? 'bg-gradient-to-r from-gradient-start/10 to-gradient-end/10 border border-accent/30'
+                          ? 'bg-accent-light border border-accent/20'
                           : 'hover:bg-surface-alt border border-transparent'
                       }`}
                     >
                       <div className="flex items-start gap-3">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          isActive ? 'gradient-primary' : 'bg-surface-alt group-hover:bg-surface'
+                          isActive ? 'bg-accent' : 'bg-surface-alt group-hover:bg-surface'
                         }`}>
-                          <MessageSquare className={`w-4 h-4 ${isActive ? 'text-text-on-gradient' : 'text-text-muted'}`} />
+                          <MessageSquare className={`w-4 h-4 ${isActive ? 'text-white' : 'text-text-muted'}`} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p

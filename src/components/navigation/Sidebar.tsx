@@ -78,8 +78,8 @@ export function Sidebar() {
       >
         <Link href="/" className="block">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-              <span className="text-lg font-bold text-text-on-gradient">D</span>
+            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
+              <span className="text-lg font-bold text-white">D</span>
             </div>
             <div>
               <div className="flex items-center gap-2">

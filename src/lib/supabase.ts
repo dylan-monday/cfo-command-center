@@ -22,9 +22,13 @@ export function createBrowserSupabaseClient(): SupabaseClient<PermissiveDatabase
   return createBrowserClient<PermissiveDatabase>(supabaseUrl, supabaseAnonKey);
 }
 
-// Server client with anon key - for server components and API routes (respects RLS)
+// Server client with service role key - for server components and API routes (bypasses RLS)
+// This is a single-user app, so RLS bypass is safe and simplifies data access
 export function createServerSupabaseClient(): SupabaseClient<PermissiveDatabase> {
-  return createClient<PermissiveDatabase>(supabaseUrl, supabaseAnonKey, {
+  if (!supabaseServiceKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for server operations');
+  }
+  return createClient<PermissiveDatabase>(supabaseUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

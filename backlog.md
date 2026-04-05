@@ -58,12 +58,33 @@
 
 ---
 
-## Future Ideas
+## Roadmap
 
+### Next Up (build after current bugs are fixed) - if finished move to the next
+- Google Drive inbox sweep (auto-ingest files from CFO Inbox folder)
+- CPA Packet Generator (designed PDF export with partner selector)
+- Property management mode (operational rules in chat context per entity)
+- Weekly email digest (Monday AM via Gmail API cron)
+- Deadline reminder emails (14 days + 3 days before tax deadlines)
+
+### Soon
 - Document preview in dashboard
-- Transaction categorization UI
-- Strategy timeline visualization
+- Transaction categorization UI with confirm/correct flow
+- Quarterly CFO memo (auto-generated, saved to Drive)
+- Net worth tracking from account_balances over time
+- Tax liability gauge on dashboard (projected vs target)
+- Partners management (CPA, bookkeeper, PM — admin + report targeting)
+
+### Later
 - Multi-year tax comparison charts
-- Partner/CPA portal (read-only access)
-- Mobile PWA optimization
+- Strategy timeline visualization  
+- Scenario modeling ("What if I buy another property?")
+- Mobile PWA with push notifications
+- Email forwarding ingestion (cfo@mondayandpartners.com)
+- QBO API integration (auto-sync transactions)
+- Plaid integration (direct bank feeds)
+
+### Someday
+- CPA/bookkeeper portal (read-only access with their own login)
 - Voice input for chat
+- Scheduled reports (weekly/monthly auto-email)

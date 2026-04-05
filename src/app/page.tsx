@@ -272,7 +272,7 @@ export default function Dashboard() {
               <button
                 onClick={() => handleGeneratePacket(false)}
                 disabled={generatingPacket}
-                className="btn-secondary px-4 py-2 flex items-center gap-2"
+                className="btn-primary px-4 py-2 flex items-center gap-2"
               >
                 {generatingPacket ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -284,7 +284,7 @@ export default function Dashboard() {
               <button
                 onClick={() => handleGeneratePacket(true)}
                 disabled={generatingPacket}
-                className="btn-primary px-4 py-2 flex items-center gap-2"
+                className="btn-secondary px-4 py-2 flex items-center gap-2"
               >
                 {generatingPacket ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

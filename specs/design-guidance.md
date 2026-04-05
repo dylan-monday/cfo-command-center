@@ -1,18 +1,22 @@
 # Design Guidance — CFO Command Center
 
-> Claude Code: Read this file before building any UI components. Follow these rules precisely. This is not a suggestion doc — it's the design spec.
+> Claude Code: This file is the definitive design spec. Read it completely before building or modifying any UI component. Every rule here is intentional. Do not deviate.
 
 ---
 
 ## Design Philosophy
 
-This is a personal financial operating system used by one person. It should feel like a premium tool made for him — not an enterprise SaaS product, not a banking app, not a generic dashboard. Think of the intersection of Linear's precision, Notion's warmth, and a really good accounting ledger's density.
+This is NOT a typical dashboard. It's a personal financial command center that feels alive, warm, and confident. It should feel like opening a beautifully designed app on your phone — something you actually want to use, not something that feels like work.
 
-**Three words:** Warm. Precise. Alive.
+**The aesthetic is:** Warm minimalism with bold data. Think high-end fintech meets editorial design. Soft surfaces, generous radius, floating cards, and confident typography. The UI has personality — it's not afraid of space, warmth, or visual hierarchy.
 
-- **Warm** — light backgrounds with a slight cream tone, not sterile blue-white. The app should feel like something you want to open.
-- **Precise** — every pixel of spacing is intentional. Typography creates hierarchy without needing bold or color. Numbers are monospaced and prominent.
-- **Alive** — subtle motion everywhere. Nothing jumps, nothing bounces, but everything responds. The interface breathes.
+**Three principles:**
+
+1. **Warm and inviting** — The palette leans warm. Backgrounds have warmth (not blue-gray). Cards feel like they float on soft surfaces. Nothing is sterile or clinical.
+
+2. **Data is the hero** — Numbers are large, confident, and immediately readable. Financial data uses a dedicated monospace font at generous sizes. The hierarchy is: number first, context second, decoration never.
+
+3. **Feels physical** — Cards have depth through layered shadows. Elements have generous radius that makes them feel touchable. Hover states lift. Transitions breathe. The interface has dimensionality, not flatness.
 
 ---
 
@@ -20,165 +24,259 @@ This is a personal financial operating system used by one person. It should feel
 
 ```css
 :root {
-  /* Backgrounds */
-  --bg:              #FAFAF9;   /* Page background — warm white */
-  --surface:         #FFFFFF;   /* Cards, panels, modals */
-  --surface-alt:     #F5F5F0;   /* Secondary surface — inputs, code, hover */
-  --surface-hover:   #F0F0EB;   /* Card hover state */
+  /* ─── Backgrounds ─── */
+  --bg:              #EDEBE7;   /* Page background — warm putty/linen */
+  --bg-secondary:    #E4E1DC;   /* Slightly deeper for layering/sections */
 
-  /* Borders */
-  --border:          #E5E5E0;   /* Default borders, dividers */
-  --border-active:   #D0D0C8;   /* Focused/active borders */
+  /* ─── Surfaces ─── */
+  --surface:         #FFFFFF;   /* Cards — pure white to pop against warm bg */
+  --surface-alt:     #F7F6F3;   /* Input fields, code blocks, secondary cards */
+  --surface-hover:   #F2F0ED;   /* Hover state for interactive cards */
+  --surface-glass:   rgba(255, 255, 255, 0.72);  /* Glassmorphism panels */
 
-  /* Text */
-  --text:            #1A1A1F;   /* Primary text */
-  --text-secondary:  #555560;   /* Descriptions, secondary content */
-  --text-muted:      #8A8A95;   /* Labels, timestamps, metadata */
-  --text-faint:      #B5B5BF;   /* Placeholder text, disabled states */
+  /* ─── Borders ─── */
+  --border:          rgba(0, 0, 0, 0.06);   /* Subtle, not harsh lines */
+  --border-active:   rgba(0, 0, 0, 0.12);   /* Focus/active states */
 
-  /* Accent */
-  --accent:          #1A8A7D;   /* Primary actions, links, active states */
-  --accent-hover:    #15756A;   /* Accent hover */
-  --accent-light:    #E6F5F3;   /* Accent background tint */
-  --accent-text:     #0D5C53;   /* Text on accent-light backgrounds */
+  /* ─── Text ─── */
+  --text:            #0D0C0B;   /* Primary text — near-black, warm */
+  --text-secondary:  #5A5752;   /* Descriptions, secondary info */
+  --text-muted:      #918E88;   /* Labels, timestamps, metadata */
+  --text-faint:      #C2BFB9;   /* Placeholders, disabled */
 
-  /* Semantic */
-  --warning:         #D4930D;   /* Attention needed, not crisis */
-  --warning-light:   #FFF8E6;   /* Warning background */
-  --warning-text:    #8A6009;   /* Text on warning backgrounds */
+  /* ─── Accent ─── */
+  --accent:          #1A8A7D;   /* Primary — teal-green */
+  --accent-hover:    #15756A;   /* Hover state */
+  --accent-light:    #E0F2EF;   /* Tint background */
+  --accent-subtle:   rgba(26, 138, 125, 0.08);  /* Very subtle accent wash */
 
-  --danger:          #CC3333;   /* Overdue, at-risk, urgent */
-  --danger-light:    #FFF0F0;   /* Danger background */
-  --danger-text:     #8A1F1F;   /* Text on danger backgrounds */
-
-  --success:         #2D8A4E;   /* Active, confirmed, healthy */
+  /* ─── Semantic ─── */
+  --warning:         #E8A817;   /* Warm amber */
+  --warning-light:   #FDF6E3;   /* Warning background */
+  --danger:          #D94242;   /* Clear red */
+  --danger-light:    #FDF0F0;   /* Danger background */
+  --success:         #2D8A4E;   /* Confident green */
   --success-light:   #EDFCF2;   /* Success background */
-  --success-text:    #1A5C30;   /* Text on success backgrounds */
 
-  /* Entity colors (used for dots, tags, chart series) */
-  --entity-mp:       #1A8A7D;   /* Monday + Partners */
-  --entity-got:      #CC3333;   /* Game of Thrones LLC */
-  --entity-saratoga: #7C5CFC;   /* Saratoga */
-  --entity-nice:     #D4930D;   /* Nice apartment */
-  --entity-chippewa: #E07C24;   /* Chippewa (primary home) */
-  --entity-hvr:      #8B6B4E;   /* Hidden Valley Ranch */
-  --entity-personal: #2D8A4E;   /* Personal */
+  /* ─── Entity Colors ─── */
+  --entity-mp:       #1A8A7D;   /* Monday + Partners — teal */
+  --entity-got:      #D94242;   /* Game of Thrones LLC — red */
+  --entity-saratoga: #7C5CFC;   /* Saratoga — violet */
+  --entity-nice:     #E8A817;   /* Nice — amber */
+  --entity-chippewa: #E07C24;   /* Chippewa — orange */
+  --entity-hvr:      #8B6B4E;   /* Hidden Valley Ranch — earth */
+  --entity-personal: #2D8A4E;   /* Personal — green */
+
+  /* ─── Shadows ─── */
+  --shadow-sm:       0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.03);
+  --shadow-md:       0 2px 8px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+  --shadow-lg:       0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 32px rgba(0, 0, 0, 0.06);
+  --shadow-hover:    0 8px 24px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 ```
 
 **Rules:**
-- NEVER use blue as an accent. The accent is teal-green (#1A8A7D).
-- NEVER use gray-blue. All grays are warm (notice the slight yellow in #FAFAF9, #F5F5F0, #E5E5E0).
-- Entity colors are ONLY used for small indicators (6-8px dots, thin left borders, chart series). Never as full backgrounds.
-- Semantic colors (warning/danger/success) are used sparingly. Most of the UI is neutral.
+- The page background is WARM (#EDEBE7) — not white, not gray, not blue-gray. This is what gives the design its personality.
+- Cards are pure white (#FFFFFF) so they float against the warm background. This contrast is essential.
+- Borders are semi-transparent black, not hard gray lines. This keeps everything soft.
+- Shadows use layered compositing (two shadow values) for realistic depth.
+- Entity colors are ONLY for dots (8px), thin accents, and chart series. Never as full card backgrounds.
 
 ---
 
 ## Typography
 
 ```css
-/* Load from Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --font-body: 'Urbanist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
 }
 ```
 
+**Urbanist** is the body font. It's modern, geometric, warm, and has excellent legibility across weights. It replaces DM Sans.
+
+**JetBrains Mono** remains the data font for all financial values, dates, and technical labels.
+
 ### Type Scale
 
-| Role | Font | Weight | Size | Color | Usage |
-|------|------|--------|------|-------|-------|
-| Page title | DM Sans | 700 | 20px | --text | "DiBona Financial", section headers |
-| Section label | JetBrains Mono | 500 | 10px, uppercase, 0.12em tracking | --text-muted | "NEEDS YOUR ATTENTION", "ENTITY MAP" |
-| Card title | DM Sans | 600 | 14px | --text | Entity names, strategy names |
-| Body text | DM Sans | 400 | 13px, line-height 1.6 | --text | Descriptions, alert messages, chat |
-| Secondary text | DM Sans | 400 | 12px | --text-secondary | Supporting info, notes |
-| Dollar amounts | JetBrains Mono | 500 | 15px | --text | $664,114.44, €14,486.26 |
-| Small data | JetBrains Mono | 400 | 12px | --text-secondary | Dates, percentages, account numbers |
-| Status badge | JetBrains Mono | 500 | 10px, lowercase | varies | "active", "at risk", "review" |
-| Button text | DM Sans | 600 | 12px, 0.02em tracking | varies | "SEND", "UPLOAD", "CONFIRM" |
-| Input text | DM Sans | 400 | 13px | --text | User-typed content |
-| Metric value | JetBrains Mono | 600 | 28px | --accent (or semantic) | Dashboard top-line numbers |
-| Metric label | JetBrains Mono | 400 | 9px, uppercase, 0.12em tracking | --text-muted | Labels under metric values |
+| Role | Font | Weight | Size | Color | Letter-spacing |
+|------|------|--------|------|-------|----------------|
+| Page title | Urbanist | 700 | 24px | --text | -0.02em |
+| Section title | Urbanist | 700 | 18px | --text | -0.01em |
+| Section label | JetBrains Mono | 500 | 10px uppercase | --text-muted | 0.12em |
+| Card title | Urbanist | 600 | 15px | --text | -0.01em |
+| Body text | Urbanist | 400 | 14px, line-height 1.6 | --text | 0 |
+| Secondary text | Urbanist | 400 | 13px | --text-secondary | 0 |
+| Small text | Urbanist | 400 | 12px | --text-muted | 0 |
+| Hero metric | JetBrains Mono | 600 | 36px | --text | -0.02em |
+| Large metric | JetBrains Mono | 600 | 28px | --text | -0.01em |
+| Data value | JetBrains Mono | 500 | 15px | --text | 0 |
+| Small data | JetBrains Mono | 400 | 12px | --text-secondary | 0 |
+| Status badge | JetBrains Mono | 500 | 10px lowercase | varies | 0.02em |
+| Button label | Urbanist | 600 | 13px | varies | 0.02em |
+| Nav icon label | Urbanist | 500 | 10px | --text-muted | 0.04em |
+| Input text | Urbanist | 400 | 14px | --text | 0 |
 
 **Rules:**
-- Dollar amounts, dates, percentages, and account numbers are ALWAYS in JetBrains Mono. This is non-negotiable.
-- Body text is ALWAYS in DM Sans.
-- Section labels are ALWAYS uppercase JetBrains Mono with letter-spacing. They're quiet wayfinding, not shouty headers.
-- Never use font sizes below 9px or above 28px.
-- Never use bold (700) on JetBrains Mono. Use 500 or 600 max.
-- Line heights: body text 1.6, data/labels 1.3, headings 1.2.
+- Urbanist gets NEGATIVE letter-spacing at larger sizes (-0.02em at 24px+). This makes it feel confident and editorial, not spread out.
+- JetBrains Mono stays at neutral or slightly positive spacing.
+- Hero metrics (36px) are reserved for the single most important number on screen — like projected tax liability or net worth.
+- Dollar amounts, dates, percentages, account numbers: ALWAYS JetBrains Mono. Non-negotiable.
+- Body text line-height: 1.6. Data line-height: 1.3. Headings: 1.2.
+- Never go below 10px. Never above 36px.
 
 ---
 
-## Spacing System
+## Spacing & Layout Grid
 
-Use a 4px base grid. All spacing should be multiples of 4.
+4px base unit. All spacing is multiples of 4.
 
 ```
-4px   — tight: between label and value, between icon and text
-8px   — compact: between list items, between badge elements
-12px  — default: between sections within a card
-16px  — comfortable: card padding (sides), gap between cards in a row
-20px  — card padding (top/bottom)
-24px  — between dashboard panels
-32px  — major section breaks
+4px   — icon-to-label, badge internal
+8px   — between items in a tight list, inline gaps
+12px  — between elements within a card section
+16px  — card padding (horizontal), gap between grid cards
+20px  — card padding (vertical), section gap within a panel
+24px  — between dashboard panels vertically
+32px  — major section dividers
+48px  — page-level vertical padding (top of content area)
 ```
 
-**Rules:**
-- Card internal padding: 16px horizontal, 20px vertical.
-- Gap between cards in a grid: 12px.
-- Gap between dashboard panels (vertically): 24px.
-- Never use margin/padding values that aren't multiples of 4.
+### App Shell Layout
+
+```
+┌──────────────────────────────────────────────────────┐
+│                    HEADER (64px)                      │
+│  Logo/title left          Nav tabs center/right       │
+├────────┬─────────────────────────────────────────────┤
+│ SIDE   │                                             │
+│ RAIL   │         MAIN CONTENT AREA                   │
+│        │                                             │
+│ 72px   │         max-width: 1200px                   │
+│ icons  │         centered with auto margins          │
+│ only   │         padding: 48px 32px                  │
+│        │                                             │
+│        │                                             │
+└────────┴─────────────────────────────────────────────┘
+```
+
+**Side rail:** 72px wide, icon-only navigation. White or glass background. Icons are 20px, with a 10px label underneath in small text. Active state: accent-colored icon with subtle accent-light pill behind it. This matches the inventory dashboard inspiration.
+
+**Header:** 64px tall. Logo/app name on left. Primary navigation (Dashboard, Chat, Strategies, Documents) as tabs or text links. Subtle bottom border or shadow to separate from content.
+
+**Main content:** Max-width 1200px, centered. Generous padding. Content never stretches edge-to-edge — it breathes.
+
+**Mobile (below 768px):** Side rail becomes bottom tab bar (56px). Header simplifies to logo + hamburger. Content goes full-width with 16px padding.
 
 ---
 
 ## Components
 
-### Cards / Panels
+### Cards — The Core Building Block
+
+Cards are the primary UI element. They must feel like they FLOAT.
 
 ```css
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 20px 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  border-radius: 16px;           /* Generous — makes cards feel modern */
+  padding: 24px 20px;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
 }
 
 .card:hover {
-  border-color: var(--border-active);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);    /* Lift on hover */
 }
 
-/* Expandable cards */
-.card[data-expanded="true"] {
-  border-color: var(--border-active);
+.card-compact {
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-compact:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 ```
 
-- No colored left borders unless the card is specifically a flagged alert.
-- No background fills on cards. They're always white on the warm background.
-- Clickable cards get the hover treatment. Static cards don't.
+**Rules:**
+- Default card radius: 16px. Compact cards: 12px. Inner elements (badges, inputs): 8px.
+- Cards ALWAYS have shadow. Never flat-on-the-page.
+- Clickable/interactive cards get the hover lift. Static display cards don't transform but do deepen shadow slightly.
+- No colored card backgrounds (no yellow, no orange). Cards are white. Period. Entity colors go on small accent elements INSIDE the card.
+
+### Feature Cards — For Dashboard Metrics
+
+For the 4-up metrics strip at the top of the dashboard, use a slightly elevated style:
+
+```css
+.feature-card {
+  background: var(--surface);
+  border: none;                   /* No border — shadow does the work */
+  border-radius: 20px;
+  padding: 28px 24px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle accent gradient on the left edge */
+.feature-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent);
+  border-radius: 4px 0 0 4px;
+}
+```
+
+The metric inside uses hero-metric type (36px JetBrains Mono) with the label below in section-label style.
 
 ### Alert Items
 
-```
-[colored dot 6px] [message text in body style]
-                   [entity tag in muted] · [type label in muted]  [× dismiss]
+```css
+.alert-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: all 0.15s ease;
+}
+
+.alert-item:hover {
+  background: var(--surface-alt);
+}
+
+.alert-item[data-priority="critical"] {
+  border-left: 3px solid var(--danger);
+  background: var(--danger-light);
+}
+
+.alert-item[data-priority="high"] {
+  border-left: 3px solid var(--warning);
+}
 ```
 
-- High priority: danger dot, danger-light background, 1px danger border (at 20% opacity).
-- Medium priority: warning dot, no background tint.
-- Low priority: text-muted dot, no background tint.
-- Dismiss button: text-faint, no background, becomes text-muted on hover.
+- Priority dot: 8px circle, colored by priority
+- Message text: body style (Urbanist 14px)
+- Entity tag + type label below message in muted small text
+- Dismiss: ghost × button, only visible on hover
 
 ### Status Badges
 
-These are NOT pills. No background fills. Just colored text.
+Text-only. No pill backgrounds. Color carries the meaning.
 
 ```css
 .badge {
@@ -189,16 +287,26 @@ These are NOT pills. No background fills. Just colored text.
   letter-spacing: 0.02em;
 }
 
-.badge-active  { color: var(--success); }
-.badge-risk    { color: var(--danger); }
-.badge-review  { color: var(--warning); }
-.badge-explore { color: var(--text-muted); }
+.badge-active   { color: var(--success); }
+.badge-at-risk  { color: var(--danger); }
+.badge-review   { color: var(--warning); }
+.badge-explore  { color: var(--text-muted); }
 ```
 
-### Entity Tags
+### Entity Indicators
 
-Small, muted references to which entity something belongs to.
+Small square dot (not circle) in the entity's color:
 
+```css
+.entity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;      /* Rounded square */
+  flex-shrink: 0;
+}
+```
+
+Entity tag text:
 ```css
 .entity-tag {
   font-family: var(--font-mono);
@@ -206,188 +314,324 @@ Small, muted references to which entity something belongs to.
   letter-spacing: 0.1em;
   text-transform: uppercase;
   opacity: 0.7;
-  color: var(--entity-[slug]);
-}
-```
-
-### Entity Dots
-
-Used in the entity map grid and anywhere an entity needs a visual marker.
-
-```css
-.entity-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px; /* slightly rounded square, not circle */
-  background: var(--entity-[slug]);
-  flex-shrink: 0;
 }
 ```
 
 ### Buttons
 
-**Primary (accent):**
+**Primary:**
 ```css
 .btn-primary {
   background: var(--accent);
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 10px 20px;
+  border-radius: 12px;
+  padding: 12px 24px;
   font-family: var(--font-body);
   font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.02em;
+  font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  box-shadow: 0 2px 8px rgba(26, 138, 125, 0.25);
+  transition: all 0.2s ease;
 }
-.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 4px 16px rgba(26, 138, 125, 0.3);
+  transform: translateY(-1px);
+}
 ```
 
-**Secondary (ghost):**
+**Secondary:**
 ```css
 .btn-secondary {
-  background: transparent;
+  background: var(--surface);
   color: var(--text-secondary);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 14px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 13px;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
   transition: all 0.15s ease;
 }
+
 .btn-secondary:hover {
+  background: var(--surface-alt);
   border-color: var(--border-active);
-  color: var(--text);
+  box-shadow: var(--shadow-md);
 }
+
 .btn-secondary[data-active="true"] {
-  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
   background: var(--accent-light);
   color: var(--accent);
+  border-color: var(--accent);
 }
 ```
 
-### Chat Bubbles
+Note: Buttons have 12px radius (matching compact cards), shadow, and hover lift. They feel like small cards themselves.
+
+### Chat Interface
+
+**Container:**
+```css
+.chat-container {
+  background: var(--bg);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.chat-input-area {
+  padding: 16px 24px 24px;
+  background: var(--surface-glass);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+}
+```
 
 **User messages (right-aligned):**
 ```css
 .chat-user {
-  background: var(--accent-light);
-  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
-  border-radius: 12px;
-  padding: 12px 16px;
-  max-width: 85%;
+  background: var(--text);           /* Dark bubble for user — high contrast */
+  color: white;
+  border-radius: 20px 20px 4px 20px; /* Tail bottom-right */
+  padding: 14px 18px;
+  max-width: 80%;
   margin-left: auto;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  box-shadow: var(--shadow-sm);
 }
 ```
 
-**System/CFO messages (left-aligned):**
+**CFO messages (left-aligned):**
 ```css
-.chat-system {
+.chat-cfo {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 20px 20px 20px 4px; /* Tail bottom-left */
+  padding: 14px 18px;
+  max-width: 80%;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  box-shadow: var(--shadow-md);
+}
+```
+
+**Chat input:**
+```css
+.chat-input {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 18px;
+  padding-right: 52px;      /* Room for send button */
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.chat-input:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md), 0 0 0 3px var(--accent-subtle);
+  outline: none;
+}
+
+.chat-send {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--accent);
+  color: white;
+  border: none;
   border-radius: 12px;
-  padding: 12px 16px;
-  max-width: 85%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(26, 138, 125, 0.3);
+  transition: all 0.15s ease;
+}
+
+.chat-send:hover {
+  background: var(--accent-hover);
+  transform: translateY(-50%) scale(1.05);
 }
 ```
 
-- Role labels: "CFO" in section-label style (mono, uppercase, muted). No "YOU" label needed for user messages.
-- No avatar icons. Waste of space.
-- Timestamps only on hover, in text-faint.
+**Rules:**
+- NO avatar icons. No user icon, no CFO icon. Waste of space.
+- Role label "CFO" appears above CFO messages in section-label style (JetBrains Mono, 10px, uppercase, muted). No label on user messages.
+- Timestamps only on hover, in text-faint, 11px.
+- Chat bubbles have asymmetric border-radius (tail effect). This adds personality.
+- The send button sits INSIDE the input field (absolute positioned). Colored accent with shadow.
+- Input area uses glassmorphism (semi-transparent white + backdrop-filter blur).
+
+### Data Tables
+
+```css
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  padding: 12px 16px;
+  text-align: left;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-body);
+  vertical-align: middle;
+}
+
+.table tr {
+  transition: background 0.1s ease;
+}
+
+.table tr:hover td {
+  background: var(--surface-alt);
+}
+
+.table td.mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.table td.amount {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  text-align: right;
+  font-size: 14px;
+}
+```
+
+- Dollar amounts right-aligned, mono, slightly larger than other cells.
+- No alternating row colors. Hover only.
+- Sticky header with background matching page.
+- Generous row padding (14px) — not cramped.
 
 ### Input Fields
 
 ```css
 .input {
-  background: var(--surface-alt);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 14px;
+  border-radius: 12px;
+  padding: 12px 16px;
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
-  outline: none;
-  transition: border-color 0.15s ease;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  width: 100%;
 }
+
 .input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-light);
+  box-shadow: var(--shadow-md), 0 0 0 3px var(--accent-subtle);
+  outline: none;
 }
+
 .input::placeholder {
   color: var(--text-faint);
 }
 ```
 
-### Data Tables
+### Navigation Tabs / Filter Buttons
 
-For transaction lists, tenant rosters, etc:
+For switching between dashboard views or filtering strategies:
 
 ```css
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-.table th {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-  padding: 8px 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-.table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
-  color: var(--text);
+.tab {
   font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
-.table td.mono {
-  font-family: var(--font-mono);
-  font-size: 12px;
+
+.tab:hover {
+  color: var(--text);
+  background: var(--surface-alt);
+}
+
+.tab[data-active="true"] {
+  color: var(--accent);
+  background: var(--accent-light);
+  font-weight: 600;
 }
 ```
-
-- Dollar amounts in table cells: mono, right-aligned.
-- Row hover: background shifts to surface-alt.
-- No alternating row colors.
 
 ---
 
 ## Motion & Animation
 
-Install the Motion library:
+Install:
 ```
 npm install motion
 ```
 
 ### Principles
-- Everything that appears should animate in. Nothing pops.
-- Everything that disappears should animate out. Nothing vanishes.
-- Motion duration: 150ms for micro-interactions, 250ms for panel transitions, 400ms for page-level transitions.
-- Easing: ease-out for entries, ease-in for exits. Never linear. Never bounce.
-- If you can't tell whether animation is present, it's working correctly.
+- Everything entering the screen animates in. Nothing appears instantly.
+- Motion is soft. Ease-out for entries. Ease-in for exits. Never linear, never bounce.
+- Durations: 150ms micro-interactions, 250ms panel transitions, 350ms page transitions.
+- If the animation calls attention to itself, it's too much. Pull back.
 
-### Specific Animations
+### Specific Implementations
 
-**Page load — staggered panel entry:**
+**Dashboard load — staggered card entry:**
 ```jsx
 import { motion } from 'motion/react';
 
-// Wrap each dashboard panel
 <motion.div
-  initial={{ opacity: 0, y: 8 }}
+  initial={{ opacity: 0, y: 16 }}
   animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.3, delay: index * 0.05, ease: 'easeOut' }}
+  transition={{ duration: 0.35, delay: index * 0.06, ease: [0.25, 0.46, 0.45, 0.94] }}
 >
-  {panel}
+  {card}
 </motion.div>
 ```
 
@@ -401,9 +645,10 @@ import { motion, AnimatePresence } from 'motion/react';
       initial={{ height: 0, opacity: 0 }}
       animate={{ height: 'auto', opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
+      transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+      style={{ overflow: 'hidden' }}
     >
-      {expandedContent}
+      {content}
     </motion.div>
   )}
 </AnimatePresence>
@@ -412,19 +657,19 @@ import { motion, AnimatePresence } from 'motion/react';
 **Chat messages — entry:**
 ```jsx
 <motion.div
-  initial={{ opacity: 0, y: 12 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.2, ease: 'easeOut' }}
+  initial={{ opacity: 0, y: 16, scale: 0.97 }}
+  animate={{ opacity: 1, y: 0, scale: 1 }}
+  transition={{ duration: 0.25, ease: 'easeOut' }}
 >
   {message}
 </motion.div>
 ```
 
-**View switching (Dashboard ↔ Chat ↔ Strategies):**
+**View crossfade:**
 ```jsx
 <AnimatePresence mode="wait">
   <motion.div
-    key={currentView}
+    key={view}
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
@@ -435,137 +680,107 @@ import { motion, AnimatePresence } from 'motion/react';
 </AnimatePresence>
 ```
 
-**Number counters (metric values):**
+**Animated number counters:**
 ```jsx
-import { motion, useSpring, useMotionValue, useTransform } from 'motion/react';
+import { useSpring, useMotionValue, useTransform, motion } from 'motion/react';
 
-function AnimatedNumber({ value }) {
-  const motionValue = useMotionValue(0);
-  const spring = useSpring(motionValue, { stiffness: 100, damping: 20 });
-  const display = useTransform(spring, (v) => 
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v)
+function AnimatedCurrency({ value }) {
+  const mv = useMotionValue(0);
+  const spring = useSpring(mv, { stiffness: 80, damping: 20 });
+  const display = useTransform(spring, v =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(v)
   );
-
-  useEffect(() => { motionValue.set(value); }, [value]);
-
+  useEffect(() => { mv.set(value); }, [value]);
   return <motion.span>{display}</motion.span>;
 }
 ```
 
-**Card hover — lift:**
-```jsx
-<motion.div
-  whileHover={{ y: -1, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
-  transition={{ duration: 0.15 }}
->
-  {card}
-</motion.div>
-```
+**Card hover lift:**
+Already handled in CSS transitions above. No Motion needed for simple transforms.
 
-**Loading state — skeleton pulse:**
+**Skeleton loading:**
 ```css
-@keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
+
 .skeleton {
-  background: var(--surface-alt);
-  border-radius: 4px;
-  animation: pulse 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg,
+    var(--surface-alt) 25%,
+    var(--surface) 50%,
+    var(--surface-alt) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
 }
 ```
 
-**Progress bars (tax liability, document completeness):**
+Use shimmer (moving gradient) not pulse (opacity change). Shimmer feels more premium.
+
+**Progress bars:**
 ```jsx
 <motion.div
   className="progress-fill"
   initial={{ width: 0 }}
-  animate={{ width: `${percentage}%` }}
-  transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
+  animate={{ width: `${pct}%` }}
+  transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
 />
 ```
 
-**Typing indicator (chat, while AI responds):**
+**Typing indicator:**
 ```jsx
-<div className="typing-indicator">
-  {[0, 1, 2].map(i => (
-    <motion.span
-      key={i}
-      className="typing-dot"
-      animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1, 0.8] }}
-      transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
-    />
-  ))}
-</div>
+{[0, 1, 2].map(i => (
+  <motion.span
+    key={i}
+    style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-muted)', display: 'inline-block' }}
+    animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
+    transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
+  />
+))}
 ```
 
-### What NOT to animate
-- Don't animate text color changes. Just transition instantly.
-- Don't animate border-radius changes.
-- Don't use spring physics on anything except number counters. Everything else uses easeOut.
-- Don't animate anything that's already visible and just updating data. Only animate entries, exits, and explicit state changes.
-- Never use loading spinners. Use skeleton pulses or thin top-of-page progress bars.
+### What NOT to Animate
+- Text color changes — instant
+- Border-radius changes — never animate
+- Data that updates in place (cell values refreshing) — just swap, don't animate
+- Anything > 400ms
+- Bounce or elastic easing (except number counters where spring is appropriate)
+- Never use loading spinners — use skeleton shimmer or thin top-of-page progress bar
 
 ---
 
-## Layout
-
-### App Shell
-```
-┌─────────────────────────────────────────────┐
-│ HEADER: logo left, nav center, status right │
-├──────────┬──────────────────────────────────┤
-│ SIDEBAR  │  MAIN CONTENT                   │
-│ (chat    │  (dashboard / strategies /       │
-│  list,   │   whatever the current view is)  │
-│  nav)    │                                  │
-│          │                                  │
-│ 240px    │  flex-1                          │
-│ collaps- │                                  │
-│ ible on  │                                  │
-│ mobile   │                                  │
-└──────────┴──────────────────────────────────┘
-```
-
-- Header: 56px tall. Subtle bottom border.
-- Sidebar: 240px wide on desktop. Hidden on mobile (hamburger toggle).
-- On mobile: sidebar becomes full-screen overlay. Chat and dashboard are separate full-screen views.
-
-### Dashboard Grid
-
-Panels stack vertically. Within panels, use CSS Grid for card layouts:
+## Dashboard Layout
 
 ```
-Alerts Panel          (full width, if items exist)
-─────────────────────────────────────────────
-Metrics Strip         (4-column grid)
-─────────────────────────────────────────────
-Entity Map            (2-column grid of expandable cards)
-─────────────────────────────────────────────
-Tax Strategies        (full width list with filters)
-─────────────────────────────────────────────
-Knowledge Base        (2-column grid of key-value pairs)
+┌─────────────────────────────────────────────────────────┐
+│ ┌───────────────────────────────────────────────────┐   │
+│ │  Metrics Strip — 4 feature cards in a row         │   │
+│ │  [Entities: 7] [Active: 6] [At Risk: 2] [Open:20]│   │
+│ └───────────────────────────────────────────────────┘   │
+│                                                         │
+│ ┌──────────────────────┐  ┌────────────────────────┐   │
+│ │  Alerts Panel         │  │  Tax Liability Gauge   │   │
+│ │  (prioritized list)   │  │  (projected for year)  │   │
+│ │                       │  │                        │   │
+│ └──────────────────────┘  └────────────────────────┘   │
+│                                                         │
+│ ┌───────────────────────────────────────────────────┐   │
+│ │  Entity Map — 2-3 column grid of entity cards     │   │
+│ │  Each expandable with accounts + key facts        │   │
+│ └───────────────────────────────────────────────────┘   │
+│                                                         │
+│ ┌───────────────────────────────────────────────────┐   │
+│ │  Recent Activity / Knowledge Base                 │   │
+│ └───────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
 ```
 
-On mobile, everything goes to single column.
-
-### Chat Layout
-
-Full height minus header. Messages scroll. Input fixed at bottom.
-
-```
-┌────────────────────────────┐
-│ Messages (scrollable)      │
-│                            │
-│ CFO: ...                   │
-│               YOU: ...     │
-│ CFO: ...                   │
-│                            │
-├────────────────────────────┤
-│ [input field] [send btn]   │
-│ [upload]                   │
-└────────────────────────────┘
-```
+- Metrics strip: 4 cards, equal width, gap 16px. Each card uses the feature-card style with 20px radius and accent left edge.
+- Alerts + Tax Gauge: 2-column, 60/40 split. Alerts scrollable if >5 items.
+- Entity map: responsive grid — 3 columns on desktop, 2 on tablet, 1 on mobile.
+- All panels have 24px vertical gap between them.
 
 ---
 
@@ -573,44 +788,48 @@ Full height minus header. Messages scroll. Input fixed at bottom.
 
 ```css
 /* Mobile first */
-@media (min-width: 640px)  { /* sm — small tablets */ }
-@media (min-width: 768px)  { /* md — tablets, sidebar appears */ }
-@media (min-width: 1024px) { /* lg — desktop, full layout */ }
-@media (min-width: 1280px) { /* xl — wide desktop, more breathing room */ }
+@media (min-width: 640px)  { /* 2-column entity grid */ }
+@media (min-width: 768px)  { /* Side rail appears, 2-col metrics */ }
+@media (min-width: 1024px) { /* Full layout, 4-col metrics, 3-col entities */ }
+@media (min-width: 1280px) { /* Max-width content area, more breathing room */ }
 ```
 
-- Below 768px: no sidebar, bottom nav, single-column dashboard, full-screen chat.
-- Above 768px: sidebar + main content side by side.
+- Below 768px: no side rail, bottom tab bar, single-column everything, full-screen chat.
+- Touch targets: minimum 44px on mobile.
 
 ---
 
 ## Anti-Patterns — NEVER Do These
 
-- ❌ Purple gradients, blue accents, or any "default AI" color schemes
-- ❌ Rounded pill badges with colored backgrounds (use text-only badges)
-- ❌ Card shadows deeper than `0 2px 8px rgba(0,0,0,0.06)`
-- ❌ Loading spinners or circular progress indicators
+- ❌ Flat cards with no shadow (cards must float)
+- ❌ Square corners or border-radius < 8px on any card or button
+- ❌ Blue, purple, or "default SaaS" accent colors
+- ❌ Gray (#f5f5f5, #e5e5e5) backgrounds — use WARM tones
+- ❌ Avatar circles in chat or anywhere
+- ❌ Loading spinners — use shimmer skeletons
+- ❌ Pill-shaped badges with colored backgrounds (text-only badges)
 - ❌ Alternating row colors in tables
-- ❌ Icon-heavy UI — use text labels, not icons, for navigation
-- ❌ Avatar circles for user/AI in chat
-- ❌ Toast notifications that pop up and disappear
-- ❌ Modal dialogs (use inline expansion or slide-over panels instead)
-- ❌ Any animation longer than 400ms
-- ❌ Bounce, spring, or elastic easing on UI elements (except number counters)
-- ❌ Background images or decorative elements
-- ❌ Emoji in the UI chrome (fine in chat messages from the AI)
-- ❌ ALL CAPS for anything except section labels in JetBrains Mono
-- ❌ Inter, Roboto, Arial, or system fonts
-- ❌ Border-radius greater than 12px on anything
+- ❌ Modals or dialog boxes — use inline expansion or slide-over panels
+- ❌ Toast notifications
+- ❌ Icon-heavy navigation — text labels with optional icons
+- ❌ Inter, Roboto, Arial, DM Sans, or system fonts as body font
+- ❌ Shadows with blue tint — shadows are always warm (rgba black)
+- ❌ Cards with colored backgrounds (yellow, orange, etc) — cards are white
+- ❌ Animation > 400ms on any element
+- ❌ Pure white (#FFFFFF) as page background — page bg is warm
+- ❌ Harsh 1px solid borders — use semi-transparent rgba borders
+- ❌ Any element that looks like "default Tailwind UI" or "shadcn defaults"
 
 ---
 
 ## Reference Aesthetic
 
-If you need a North Star, study these:
-- **Linear** (linear.app) — information density, typography hierarchy, subtle motion
-- **Vercel Dashboard** — clean data presentation, monospaced values, warm but professional
-- **Notion** — warmth, approachability, the feeling that a human designed this for humans
-- **Apple Notes** — simplicity, the confidence to leave space empty
+**Primary inspiration:** Warm editorial dashboard with floating cards on a linen-tone background. Cards feel physical — you could pick them up. Data is confident and large. Typography is modern geometric (Urbanist). Everything has generous radius and soft shadow depth.
 
-The goal is an interface that feels like it was designed by someone with strong opinions about typography who also understands compound interest.
+**North star references:**
+- The inventory dashboard by Ron Design — warm palette, bold metrics, card depth, icon sidebar
+- Linear app — information density with elegance
+- Vercel dashboard — clean data presentation, monospace values
+- Apple's design language — confidence to use whitespace, soft materials, depth through shadow
+
+**The test:** If you screenshot the dashboard and show it to a designer, they should say "that's really well designed" before they notice it's a financial tool. The design should feel premium, intentional, and warm — never generic, never cold, never "template-y."

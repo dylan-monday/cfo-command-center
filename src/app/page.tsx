@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { MetricCard } from '@/components/ui';
-import { AlertsPanel, EntityGrid, StrategiesPanel } from '@/components/panels';
+import { AlertsPanel, EntityGrid, StrategiesPanel, KnowledgePanel } from '@/components/panels';
 import { Building2, Wallet, AlertCircle, PiggyBank } from 'lucide-react';
 
 interface DashboardStats {
@@ -135,6 +135,15 @@ export default function Dashboard() {
           <StrategiesPanel limit={6} />
         </motion.div>
       </div>
+
+      {/* Knowledge Base panel - full width */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.4 }}
+      >
+        <KnowledgePanel limit={12} />
+      </motion.div>
     </div>
   );
 }

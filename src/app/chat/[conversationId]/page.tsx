@@ -104,7 +104,7 @@ export default function ConversationPage({ params }: ConversationPageProps) {
         throw new Error('Failed to send message');
       }
 
-      // Handle streaming response
+      // Handle streaming response - server sends raw text chunks
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
 
@@ -118,46 +118,20 @@ export default function ConversationPage({ params }: ConversationPageProps) {
         const { done, value } = await reader.read();
         if (done) break;
 
+        // Decode the raw text chunk directly
         const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        assistantContent += chunk;
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') {
-              continue;
-            }
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.text) {
-                assistantContent += parsed.text;
-                setMessages((prev) => {
-                  const updated = [...prev];
-                  updated[updated.length - 1] = {
-                    role: 'assistant',
-                    content: assistantContent,
-                    timestamp: new Date().toISOString(),
-                  };
-                  return updated;
-                });
-              }
-            } catch {
-              // Not JSON, might be raw text
-              if (data.trim()) {
-                assistantContent += data;
-                setMessages((prev) => {
-                  const updated = [...prev];
-                  updated[updated.length - 1] = {
-                    role: 'assistant',
-                    content: assistantContent,
-                    timestamp: new Date().toISOString(),
-                  };
-                  return updated;
-                });
-              }
-            }
-          }
-        }
+        // Update the assistant message with accumulated content
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: 'assistant',
+            content: assistantContent,
+            timestamp: new Date().toISOString(),
+          };
+          return updated;
+        });
       }
     } catch (error) {
       console.error('Chat error:', error);

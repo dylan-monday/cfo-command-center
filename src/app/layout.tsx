@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Urbanist, JetBrains_Mono } from "next/font/google";
+import { Urbanist, JetBrains_Mono, Source_Sans_3 } from "next/font/google";
 import { AppShell } from "@/components/AppShell";
 import "./globals.css";
 
@@ -11,6 +11,12 @@ const urbanist = Urbanist({
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
+
+const sourceSans3 = Source_Sans_3({
+  variable: "--font-source-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
 });
@@ -28,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${urbanist.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${urbanist.variable} ${jetbrainsMono.variable} ${sourceSans3.variable} h-full antialiased`}
     >
       <body className="h-full">
         <AppShell>{children}</AppShell>

@@ -88,8 +88,9 @@ export function ChatMessage({ role, content, timestamp, isStreaming }: ChatMessa
             ? 'bg-[#0D0C0B] text-white rounded-[20px_20px_4px_20px]'
             : 'bg-surface border border-[rgba(0,0,0,0.06)] rounded-[20px_20px_20px_4px] shadow-md'
         }`}
+        style={{ fontFamily: 'var(--font-chat)' }}
       >
-        <div className="text-[14px] leading-[1.6] whitespace-pre-wrap">
+        <div className="text-[14px] leading-[1.6] whitespace-pre-wrap font-normal">
           {isUser ? content : formatContent(content)}
           {isStreaming && content && (
             <motion.span

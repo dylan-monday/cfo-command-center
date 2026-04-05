@@ -190,16 +190,34 @@ export async function POST(request: NextRequest) {
 }
 
 // ============================================================================
-// GET Handler - List conversations
+// GET Handler - Get single conversation or list conversations
 // ============================================================================
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    const conversationId = searchParams.get('conversationId');
 
     const supabase = createServerSupabaseClient();
+
+    // If conversationId provided, return that specific conversation with messages
+    if (conversationId) {
+      const { data: conversation, error } = await supabase
+        .from('conversations')
+        .select('*')
+        .eq('id', conversationId)
+        .single();
+
+      if (error || !conversation) {
+        return Response.json({ error: 'Conversation not found' }, { status: 404 });
+      }
+
+      return Response.json({ conversation });
+    }
+
+    // Otherwise, list all conversations (without messages for efficiency)
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
     const { data, error, count } = await supabase
       .from('conversations')

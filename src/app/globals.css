@@ -58,6 +58,7 @@
 
   /* Typography */
   --font-body: var(--font-urbanist), -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-chat: var(--font-source-sans), 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: var(--font-jetbrains-mono), 'SF Mono', 'Fira Code', monospace;
 
   /* Spacing and Radius */

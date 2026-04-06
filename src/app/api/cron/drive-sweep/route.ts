@@ -183,11 +183,11 @@ async function processFile(
     let textContent: string;
 
     if (file.mimeType === 'application/pdf') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pdfParseModule = await import('pdf-parse') as any;
-      const pdfParse = pdfParseModule.default || pdfParseModule;
-      const pdfData = await pdfParse(buffer);
-      textContent = pdfData.text;
+      // Use unpdf for serverless-compatible PDF parsing
+      const { extractText, getDocumentProxy } = await import('unpdf');
+      const pdf = await getDocumentProxy(new Uint8Array(buffer));
+      const { text } = await extractText(pdf, { mergePages: true });
+      textContent = text || '';
     } else if (file.mimeType === 'text/csv' || file.mimeType === 'text/plain') {
       textContent = buffer.toString('utf-8');
     } else if (file.mimeType.startsWith('image/')) {

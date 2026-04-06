@@ -39,17 +39,13 @@ export async function POST(request: NextRequest) {
     const filename = file.name;
 
     if (fileType === 'application/pdf') {
-      // For PDFs, we'll need to extract text using pdf-parse v2 API
+      // For PDFs, use unpdf (serverless-compatible, zero native dependencies)
       try {
-        const { PDFParse } = await import('pdf-parse');
-        const buffer = Buffer.from(await file.arrayBuffer());
-        // PDFParse v2 constructor takes options object with data property
-        const pdfParser = new PDFParse({ data: buffer });
-        const textResult = await pdfParser.getText();
-        // Combine text from all pages
-        textContent = textResult.pages?.map((p) => p.text).join('\n\n') || textResult.text || '';
-        // Clean up
-        await pdfParser.destroy();
+        const { extractText, getDocumentProxy } = await import('unpdf');
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
+        const { text } = await extractText(pdf, { mergePages: true });
+        textContent = text || '';
       } catch (pdfError) {
         console.error('PDF parse error:', pdfError);
         // Fall back to noting it's a PDF we couldn't parse
@@ -313,28 +309,26 @@ export async function PATCH(request: NextRequest) {
     let extractionError: string | null = null;
 
     if (ext === 'pdf') {
-      // PDF parsing with pdf-parse v2 API
+      // PDF parsing with unpdf (serverless-compatible)
       try {
-        const { PDFParse } = await import('pdf-parse');
-        const buffer = Buffer.from(await fileData.arrayBuffer());
-        console.log(`Re-parsing PDF: ${filename}, buffer size: ${buffer.length} bytes`);
-        const pdfParser = new PDFParse({ data: buffer });
-        const textResult = await pdfParser.getText();
-        const extractedText = textResult.pages?.map((p) => p.text).join('\n\n') || textResult.text || '';
-        await pdfParser.destroy();
+        const { extractText, getDocumentProxy } = await import('unpdf');
+        const arrayBuffer = await fileData.arrayBuffer();
+        console.log(`Re-parsing PDF: ${filename}, buffer size: ${arrayBuffer.byteLength} bytes`);
+        const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
+        const { text: extractedText } = await extractText(pdf, { mergePages: true });
 
         if (extractedText && extractedText.trim().length > 0) {
           textContent = extractedText;
-          extractionMethod = 'pdf-parse-v2';
+          extractionMethod = 'unpdf';
           console.log(`PDF text extracted: ${textContent.length} chars`);
         } else {
-          extractionMethod = 'pdf-parse-empty';
+          extractionMethod = 'unpdf-empty';
           extractionError = 'PDF parsed but no text content found (may be scanned/image PDF)';
           textContent = `[PDF file: ${filename}]\n\nPDF parsed but no text content found. This may be a scanned document that requires OCR.`;
         }
       } catch (pdfError) {
         console.error('PDF parse error:', pdfError);
-        extractionMethod = 'pdf-parse-failed';
+        extractionMethod = 'unpdf-failed';
         extractionError = pdfError instanceof Error ? pdfError.message : 'Unknown PDF parse error';
         textContent = `[PDF file: ${filename}]\n\nPDF text extraction failed: ${extractionError}`;
       }

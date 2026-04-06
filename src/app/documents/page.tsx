@@ -209,13 +209,13 @@ export default function DocumentsPage() {
       let message: string;
       let success: boolean;
 
-      if (extraction.method === 'pdf-parse-v2') {
+      if (extraction.method === 'unpdf' || extraction.method === 'pdf-parse-v2') {
         success = true;
         message = `Extracted ${extraction.textLength?.toLocaleString()} chars. ${summary.slice(0, 80)}...`;
-      } else if (extraction.method === 'pdf-parse-empty') {
+      } else if (extraction.method === 'unpdf-empty' || extraction.method === 'pdf-parse-empty') {
         success = false;
         message = extraction.error || 'PDF parsed but no text found (may be scanned/image)';
-      } else if (extraction.method === 'pdf-parse-failed') {
+      } else if (extraction.method === 'unpdf-failed' || extraction.method === 'pdf-parse-failed') {
         success = false;
         message = `Extraction failed: ${extraction.error || 'Unknown error'}`;
       } else {

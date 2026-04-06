@@ -16,6 +16,7 @@ import {
   ChevronRight,
   X,
   Loader2,
+  RefreshCw,
 } from 'lucide-react';
 import type { DocumentType, DocumentStatus } from '@/types';
 
@@ -83,6 +84,9 @@ export default function DocumentsPage() {
 
   // Expanded document
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Re-parse state
+  const [reparsingId, setReparsingId] = useState<string | null>(null);
 
   // Fetch entities
   useEffect(() => {
@@ -173,6 +177,34 @@ export default function DocumentsPage() {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+    }
+  };
+
+  // Handle re-parse
+  const handleReparse = async (documentId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Don't toggle expansion
+    setReparsingId(documentId);
+
+    try {
+      const res = await fetch('/api/parse', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Re-parse failed');
+      }
+
+      // Refresh documents list
+      await fetchDocuments();
+    } catch (error) {
+      console.error('Re-parse error:', error);
+      setUploadError(error instanceof Error ? error.message : 'Re-parse failed');
+    } finally {
+      setReparsingId(null);
     }
   };
 
@@ -500,6 +532,22 @@ export default function DocumentsPage() {
                                       </p>
                                     </div>
                                   )}
+
+                                  {/* Actions */}
+                                  <div className="flex gap-2 pt-2">
+                                    <button
+                                      onClick={(e) => handleReparse(doc.id, e)}
+                                      disabled={reparsingId === doc.id}
+                                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-accent bg-accent-light hover:bg-accent/10 rounded-md transition-colors disabled:opacity-50"
+                                    >
+                                      {reparsingId === doc.id ? (
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                      ) : (
+                                        <RefreshCw className="w-3 h-3" />
+                                      )}
+                                      {reparsingId === doc.id ? 'Re-parsing...' : 'Re-parse'}
+                                    </button>
+                                  </div>
                                 </div>
                               </motion.div>
                             )}

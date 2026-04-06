@@ -374,13 +374,9 @@ export async function GET(request: Request) {
 
 /**
  * POST - Manual trigger from dashboard
+ * No cron secret required for manual triggers (single-user app)
  */
-export async function POST(request: Request) {
-  // Verify authorization
-  if (!verifyCronSecret(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+export async function POST() {
   return runSweep();
 }
 

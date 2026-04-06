@@ -10,6 +10,7 @@ Read these in order before building. They are in the `/specs/` folder:
 3. `03-Addendum-Household-Tax-Strategy.docx` — Keelin's employment ($40K via Gusto), home office deductions, Sabine's 529, updated tax strategies
 4. `04-Addendum-Document-Ingestion.docx` — Universal AI document parser, pattern learning, balance tracking
 5. `05-Addendum-Property-Integration.docx` — Full property portfolio (7 entities, 15 accounts, 80+ knowledge facts, 11 action items, operational rules)
+6. `06-Addendum-Document-Lifecycle.md` — Document inbox/filing workflow, automatic knowledge extraction from parsed documents, unpdf for serverless PDF parsing
 
 Later addenda supersede earlier ones where they conflict. Seed data is cumulative.
 

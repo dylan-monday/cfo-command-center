@@ -10,6 +10,7 @@
 import { NextRequest } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { parseDocument } from '@/lib/claude';
+import { extractKnowledgeFromDocument } from '@/lib/knowledge-extractor';
 import type { DocumentType, DocumentStatus } from '@/types';
 
 // ============================================================================
@@ -162,6 +163,18 @@ export async function POST(request: NextRequest) {
       }));
 
       await supabase.from('proactive_queue').insert(questions);
+    }
+
+    // Extract knowledge facts from document
+    let knowledgeResult = null;
+    if (document && parseResult.keyFigures) {
+      knowledgeResult = await extractKnowledgeFromDocument({
+        documentId: document.id,
+        entitySlug: parseResult.suggestedEntity,
+        docType: parseResult.docType,
+        keyFigures: parseResult.keyFigures,
+        aiSummary: parseResult.summary,
+      });
     }
 
     return Response.json({
@@ -423,6 +436,19 @@ export async function PATCH(request: NextRequest) {
       await supabase.from('proactive_queue').insert(questions);
     }
 
+    // Extract knowledge facts from re-parsed document
+    let knowledgeResult = null;
+    if (parseResult.keyFigures) {
+      const entitySlug = doc.entities?.slug || parseResult.suggestedEntity;
+      knowledgeResult = await extractKnowledgeFromDocument({
+        documentId,
+        entitySlug,
+        docType: parseResult.docType,
+        keyFigures: parseResult.keyFigures,
+        aiSummary: parseResult.summary,
+      });
+    }
+
     return Response.json({
       success: true,
       document: updatedDoc,
@@ -440,9 +466,67 @@ export async function PATCH(request: NextRequest) {
         error: extractionError,
         textLength: textContent.length,
       },
+      knowledge: knowledgeResult,
     });
   } catch (error) {
     console.error('Re-parse API error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return Response.json(
+      { error: 'Internal server error', details: errorMessage },
+      { status: 500 }
+    );
+  }
+}
+
+// ============================================================================
+// PUT - Update Document Status (Confirm & File)
+// ============================================================================
+
+export async function PUT(request: NextRequest) {
+  try {
+    const { documentId, status } = await request.json();
+
+    if (!documentId) {
+      return Response.json(
+        { error: 'documentId is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!status || !['confirmed', 'parsed', 'processing', 'error'].includes(status)) {
+      return Response.json(
+        { error: 'Invalid status. Must be: confirmed, parsed, processing, or error' },
+        { status: 400 }
+      );
+    }
+
+    const supabase = createServerSupabaseClient();
+
+    // Update document status
+    const { data: updatedDoc, error: updateError } = await supabase
+      .from('documents')
+      .update({
+        status: status as DocumentStatus,
+        ...(status === 'confirmed' && { confirmed_at: new Date().toISOString() }),
+      })
+      .eq('id', documentId)
+      .select('*, entities!left(slug, name), accounts!left(name)')
+      .single();
+
+    if (updateError) {
+      console.error('Document status update error:', updateError);
+      return Response.json(
+        { error: 'Failed to update document status' },
+        { status: 500 }
+      );
+    }
+
+    return Response.json({
+      success: true,
+      document: updatedDoc,
+    });
+  } catch (error) {
+    console.error('PUT document status error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return Response.json(
       { error: 'Internal server error', details: errorMessage },

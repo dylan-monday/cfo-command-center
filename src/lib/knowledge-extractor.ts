@@ -258,6 +258,107 @@ export async function verifyFact(factId: string): Promise<boolean> {
 }
 
 // ============================================================================
+// Document Knowledge Extraction
+// ============================================================================
+
+/**
+ * Extract knowledge facts from a parsed document's key figures.
+ * Creates structured facts with proper categories and keys.
+ */
+export async function extractKnowledgeFromDocument(params: {
+  documentId: string;
+  entitySlug?: string;
+  docType: string;
+  keyFigures: Record<string, number | string> | null;
+  taxYear?: number;
+  aiSummary?: string;
+}): Promise<PersistResult> {
+  const { documentId, entitySlug, docType, keyFigures, taxYear, aiSummary } = params;
+
+  if (!keyFigures || Object.keys(keyFigures).length === 0) {
+    return { inserted: 0, updated: 0, skipped: 0, errors: [] };
+  }
+
+  const facts: ExtractedFact[] = [];
+  const year = taxYear || new Date().getFullYear();
+
+  // Map key figure names to knowledge categories and readable keys
+  const figureMapping: Record<string, { category: KnowledgeCategory; keyPrefix: string }> = {
+    // Income/Revenue
+    total_income: { category: 'financial', keyPrefix: 'total_income' },
+    gross_income: { category: 'financial', keyPrefix: 'gross_income' },
+    net_income: { category: 'financial', keyPrefix: 'net_income' },
+    net_operating_income: { category: 'financial', keyPrefix: 'net_operating_income' },
+
+    // Tax figures
+    total_tax: { category: 'tax', keyPrefix: 'total_tax' },
+    federal_tax: { category: 'tax', keyPrefix: 'federal_tax' },
+    state_tax: { category: 'tax', keyPrefix: 'state_tax' },
+    income_franchise_tax_due: { category: 'tax', keyPrefix: 'la_franchise_tax' },
+    total_amount_due: { category: 'tax', keyPrefix: 'tax_amount_due' },
+    refund: { category: 'tax', keyPrefix: 'tax_refund' },
+    electronic_payment: { category: 'tax', keyPrefix: 'electronic_payment' },
+
+    // Balances
+    beginning_balance: { category: 'financial', keyPrefix: 'beginning_balance' },
+    ending_balance: { category: 'financial', keyPrefix: 'ending_balance' },
+
+    // Expenses
+    total_expenses: { category: 'financial', keyPrefix: 'total_expenses' },
+    fees: { category: 'financial', keyPrefix: 'fees' },
+
+    // Investments
+    contributions: { category: 'financial', keyPrefix: 'contributions' },
+    withdrawals: { category: 'financial', keyPrefix: 'withdrawals' },
+    gains_losses: { category: 'financial', keyPrefix: 'gains_losses' },
+
+    // Property
+    rent_collected: { category: 'property', keyPrefix: 'rent_collected' },
+    management_fee: { category: 'property', keyPrefix: 'management_fee' },
+    repairs: { category: 'property', keyPrefix: 'repairs' },
+  };
+
+  // Convert key figures to facts
+  for (const [figureKey, value] of Object.entries(keyFigures)) {
+    // Parse numeric value if it's a string
+    const numericValue = typeof value === 'string' ? parseFloat(value) : value;
+
+    // Skip zero values for certain fields (but keep for refunds, amounts due)
+    const skipZeroFields = ['beginning_balance', 'ending_balance', 'contributions', 'withdrawals'];
+    if (numericValue === 0 && skipZeroFields.includes(figureKey)) {
+      continue;
+    }
+
+    const mapping = figureMapping[figureKey];
+    const category: KnowledgeCategory = mapping?.category || 'financial';
+    const keyPrefix = mapping?.keyPrefix || figureKey.replace(/_/g, '_');
+
+    // Format the value as currency
+    const formattedValue = !isNaN(numericValue)
+      ? numericValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+      : String(value);
+
+    // Create fact key with year and doc type context
+    const factKey = `${year}_${keyPrefix}`;
+
+    facts.push({
+      category,
+      key: factKey,
+      value: formattedValue,
+      entitySlug,
+      confidence: 'confirmed', // Document data is considered confirmed
+    });
+  }
+
+  // Persist facts with document source
+  const result = await persistFacts(facts, 'document', documentId);
+
+  console.log(`Knowledge extraction for document ${documentId}: ${result.inserted} inserted, ${result.updated} updated, ${result.skipped} skipped`);
+
+  return result;
+}
+
+// ============================================================================
 // Staleness Detection
 // ============================================================================
 

@@ -1,14 +1,20 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChatMessage, ChatInput } from '@/components/chat';
+import { AlertTriangle, Check, X, Loader2 } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp?: string;
+}
+
+interface AlertContext {
+  id: string;
+  message: string;
 }
 
 const SUGGESTED_PROMPTS = [
@@ -29,12 +35,29 @@ function ChatPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Alert context state
+  const [alertContext, setAlertContext] = useState<AlertContext | null>(null);
+  const [resolvingAlert, setResolvingAlert] = useState(false);
+  const [alertResolved, setAlertResolved] = useState(false);
+
   // Check for property review context from URL or sessionStorage
   useEffect(() => {
     // Check URL params for entity
     const urlEntity = searchParams.get('entity');
     if (urlEntity) {
       setEntitySlug(urlEntity);
+    }
+
+    // Check URL params for alert context
+    const alertId = searchParams.get('alertId');
+    const alertMessage = searchParams.get('context');
+    if (alertId && alertMessage) {
+      setAlertContext({
+        id: alertId,
+        message: decodeURIComponent(alertMessage),
+      });
+      // Auto-send the alert as a prompt
+      setAutoSendPending(`I need to address this action item: "${decodeURIComponent(alertMessage)}"`);
     }
 
     // Check sessionStorage for property review context
@@ -55,6 +78,42 @@ function ChatPageContent() {
       }
     }
   }, [searchParams]);
+
+  // Handle resolving the alert
+  const handleResolveAlert = async () => {
+    if (!alertContext) return;
+
+    setResolvingAlert(true);
+    try {
+      const res = await fetch('/api/alerts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: alertContext.id,
+          status: 'resolved',
+          resolvedNote: 'Resolved via chat discussion',
+        }),
+      });
+
+      if (res.ok) {
+        setAlertResolved(true);
+        // Clear alert context after a delay
+        setTimeout(() => {
+          setAlertContext(null);
+          setAlertResolved(false);
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Failed to resolve alert:', error);
+    } finally {
+      setResolvingAlert(false);
+    }
+  };
+
+  // Handle dismissing the alert banner without resolving
+  const handleDismissAlert = () => {
+    setAlertContext(null);
+  };
 
   // Fetch entities for context selector
   useEffect(() => {
@@ -188,6 +247,72 @@ function ChatPageContent() {
           ))}
         </select>
       </div>
+
+      {/* Alert context banner */}
+      <AnimatePresence>
+        {alertContext && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden border-b border-border"
+          >
+            <div className="max-w-3xl mx-auto px-4 py-3">
+              <div
+                className={`p-4 rounded-lg flex items-start justify-between ${
+                  alertResolved
+                    ? 'bg-success-light border border-success/20'
+                    : 'bg-warning-light border border-warning/20'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  {alertResolved ? (
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+                  )}
+                  <div>
+                    <div className="text-sm font-medium text-text">
+                      {alertResolved ? 'Action Item Resolved' : 'Discussing Action Item'}
+                    </div>
+                    <div className="text-xs text-text-secondary mt-1 line-clamp-2">
+                      {alertContext.message}
+                    </div>
+                  </div>
+                </div>
+
+                {!alertResolved && messages.length >= 2 && (
+                  <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                    <button
+                      onClick={handleResolveAlert}
+                      disabled={resolvingAlert}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-success hover:bg-success/90 rounded-md transition-colors disabled:opacity-50"
+                    >
+                      {resolvingAlert ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Check className="w-3 h-3" />
+                      )}
+                      Mark Resolved
+                    </button>
+                    <button
+                      onClick={handleDismissAlert}
+                      className="p-1.5 text-text-muted hover:text-text rounded transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {alertResolved && (
+                  <Check className="w-5 h-5 text-success flex-shrink-0" />
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto">

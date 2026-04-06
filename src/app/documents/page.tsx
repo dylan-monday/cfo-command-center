@@ -17,6 +17,9 @@ import {
   X,
   Loader2,
   RefreshCw,
+  Archive,
+  Inbox,
+  FolderOpen,
 } from 'lucide-react';
 import type { DocumentType, DocumentStatus } from '@/types';
 
@@ -88,6 +91,12 @@ export default function DocumentsPage() {
   // Re-parse state
   const [reparsingId, setReparsingId] = useState<string | null>(null);
 
+  // Confirm & File state
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+
+  // View mode: 'inbox' (parsed only) or 'all'
+  const [viewMode, setViewMode] = useState<'inbox' | 'all'>('inbox');
+
   // Fetch entities
   useEffect(() => {
     async function fetchEntities() {
@@ -128,6 +137,11 @@ export default function DocumentsPage() {
         );
       }
 
+      // Client-side view mode filter (inbox = parsed only)
+      if (viewMode === 'inbox') {
+        docs = docs.filter((d: Document) => d.status === 'parsed');
+      }
+
       setDocuments(docs);
       setTotal(data.total || docs.length);
     } catch (error) {
@@ -135,7 +149,7 @@ export default function DocumentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedEntity, selectedType, selectedStatus, searchQuery]);
+  }, [selectedEntity, selectedType, selectedStatus, searchQuery, viewMode]);
 
   useEffect(() => {
     fetchDocuments();
@@ -182,6 +196,41 @@ export default function DocumentsPage() {
 
   // Re-parse result feedback
   const [reparseResult, setReparseResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  // Confirm result feedback
+  const [confirmResult, setConfirmResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  // Handle confirm & file
+  const handleConfirm = async (documentId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Don't toggle expansion
+    setConfirmingId(documentId);
+    setConfirmResult(null);
+
+    try {
+      const res = await fetch('/api/parse', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId, status: 'confirmed' }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Confirm failed');
+      }
+
+      setConfirmResult({ success: true, message: 'Document confirmed and filed' });
+
+      // Refresh documents list
+      await fetchDocuments();
+    } catch (error) {
+      console.error('Confirm error:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Confirm failed';
+      setConfirmResult({ success: false, message: errorMsg });
+    } finally {
+      setConfirmingId(null);
+    }
+  };
 
   // Handle re-parse
   const handleReparse = async (documentId: string, e: React.MouseEvent) => {
@@ -346,6 +395,39 @@ export default function DocumentsPage() {
         )}
       </AnimatePresence>
 
+      {/* Confirm result */}
+      <AnimatePresence>
+        {confirmResult && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className={`p-4 border rounded-lg flex items-start justify-between ${
+              confirmResult.success
+                ? 'bg-success-light/50 border-success/20'
+                : 'bg-danger-light border-danger/20'
+            }`}
+          >
+            <div className="flex items-start gap-2">
+              {confirmResult.success ? (
+                <CheckCircle2 className="w-4 h-4 text-success mt-0.5" />
+              ) : (
+                <AlertCircle className="w-4 h-4 text-danger mt-0.5" />
+              )}
+              <div>
+                <span className="text-sm font-medium block">
+                  {confirmResult.success ? 'Document filed' : 'Filing failed'}
+                </span>
+                <span className="text-xs text-text-secondary">{confirmResult.message}</span>
+              </div>
+            </div>
+            <button onClick={() => setConfirmResult(null)}>
+              <X className="w-4 h-4 text-text-muted" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Stats bar */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -383,13 +465,44 @@ export default function DocumentsPage() {
         </div>
       </motion.div>
 
-      {/* Filters */}
+      {/* View Toggle + Filters */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15, duration: 0.3 }}
         className="flex flex-wrap items-center gap-3"
       >
+        {/* View Toggle */}
+        <div className="flex rounded-lg border border-border overflow-hidden">
+          <button
+            onClick={() => setViewMode('inbox')}
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
+              viewMode === 'inbox'
+                ? 'bg-accent text-white'
+                : 'bg-surface hover:bg-surface-hover text-text-secondary'
+            }`}
+          >
+            <Inbox className="w-3.5 h-3.5" />
+            Inbox
+            {stats.parsed > 0 && viewMode !== 'inbox' && (
+              <span className="ml-1 px-1.5 py-0.5 bg-accent/20 text-accent text-[10px] rounded-full">
+                {stats.parsed}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setViewMode('all')}
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors border-l border-border ${
+              viewMode === 'all'
+                ? 'bg-accent text-white'
+                : 'bg-surface hover:bg-surface-hover text-text-secondary'
+            }`}
+          >
+            <FolderOpen className="w-3.5 h-3.5" />
+            All Documents
+          </button>
+        </div>
+
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
           <input
@@ -462,9 +575,9 @@ export default function DocumentsPage() {
       >
         <Card animate={false}>
           <CardHeader
-            label="Document Library"
-            title={`${total} Documents`}
-            action={<FileText className="w-5 h-5 text-accent" />}
+            label={viewMode === 'inbox' ? 'Document Inbox' : 'Document Library'}
+            title={`${documents.length} ${viewMode === 'inbox' ? 'to Review' : 'Documents'}`}
+            action={viewMode === 'inbox' ? <Inbox className="w-5 h-5 text-accent" /> : <FileText className="w-5 h-5 text-accent" />}
           />
 
           {loading ? (
@@ -609,6 +722,22 @@ export default function DocumentsPage() {
                                       )}
                                       {reparsingId === doc.id ? 'Re-parsing...' : 'Re-parse'}
                                     </button>
+
+                                    {/* Confirm & File button - only show for parsed (inbox) documents */}
+                                    {doc.status === 'parsed' && (
+                                      <button
+                                        onClick={(e) => handleConfirm(doc.id, e)}
+                                        disabled={confirmingId === doc.id}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-success hover:bg-success/90 rounded-md transition-colors disabled:opacity-50"
+                                      >
+                                        {confirmingId === doc.id ? (
+                                          <Loader2 className="w-3 h-3 animate-spin" />
+                                        ) : (
+                                          <Archive className="w-3 h-3" />
+                                        )}
+                                        {confirmingId === doc.id ? 'Filing...' : 'Confirm & File'}
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
                               </motion.div>

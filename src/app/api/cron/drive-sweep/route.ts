@@ -104,14 +104,26 @@ async function listInboxFiles(): Promise<Array<{
   size: string;
 }>> {
   const drive = getDriveClient();
+
+  console.log('=== DRIVE SWEEP DEBUG ===');
+  console.log('ROOT_FOLDER_ID:', ROOT_FOLDER_ID);
+
   const inboxFolderId = await ensureFolder(CFO_INBOX_FOLDER_NAME, ROOT_FOLDER_ID);
+  console.log('Found/created CFO Inbox folder ID:', inboxFolderId);
+
+  const query = `'${inboxFolderId}' in parents and trashed=false`;
+  console.log('Query:', query);
 
   const { data } = await drive.files.list({
-    q: `'${inboxFolderId}' in parents and trashed=false`,
+    q: query,
     fields: 'files(id, name, mimeType, size)',
     orderBy: 'createdTime asc',
     pageSize: 20, // Process up to 20 files per run
   });
+
+  console.log('Files found:', data.files?.length || 0);
+  console.log('File names:', data.files?.map(f => f.name));
+  console.log('=========================');
 
   return (data.files || []).map((f) => ({
     id: f.id!,

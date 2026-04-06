@@ -180,10 +180,14 @@ export default function DocumentsPage() {
     }
   };
 
+  // Re-parse result feedback
+  const [reparseResult, setReparseResult] = useState<{ success: boolean; message: string } | null>(null);
+
   // Handle re-parse
   const handleReparse = async (documentId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Don't toggle expansion
     setReparsingId(documentId);
+    setReparseResult(null);
 
     try {
       const res = await fetch('/api/parse', {
@@ -198,11 +202,36 @@ export default function DocumentsPage() {
         throw new Error(data.error || 'Re-parse failed');
       }
 
+      // Show feedback with extraction details
+      const extraction = data.extraction || {};
+      const summary = data.parseResult?.summary || 'No summary generated';
+
+      let message: string;
+      let success: boolean;
+
+      if (extraction.method === 'pdf-parse-v2') {
+        success = true;
+        message = `Extracted ${extraction.textLength?.toLocaleString()} chars. ${summary.slice(0, 80)}...`;
+      } else if (extraction.method === 'pdf-parse-empty') {
+        success = false;
+        message = extraction.error || 'PDF parsed but no text found (may be scanned/image)';
+      } else if (extraction.method === 'pdf-parse-failed') {
+        success = false;
+        message = `Extraction failed: ${extraction.error || 'Unknown error'}`;
+      } else {
+        success = !summary.toLowerCase().includes('failed');
+        message = summary.slice(0, 100);
+      }
+
+      setReparseResult({ success, message });
+
       // Refresh documents list
       await fetchDocuments();
     } catch (error) {
       console.error('Re-parse error:', error);
-      setUploadError(error instanceof Error ? error.message : 'Re-parse failed');
+      const errorMsg = error instanceof Error ? error.message : 'Re-parse failed';
+      setReparseResult({ success: false, message: errorMsg });
+      setUploadError(errorMsg);
     } finally {
       setReparsingId(null);
     }
@@ -279,6 +308,39 @@ export default function DocumentsPage() {
             </div>
             <button onClick={() => setUploadError(null)}>
               <X className="w-4 h-4 text-danger-text" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Re-parse result */}
+      <AnimatePresence>
+        {reparseResult && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className={`p-4 border rounded-lg flex items-start justify-between ${
+              reparseResult.success
+                ? 'bg-accent-light/50 border-accent/20'
+                : 'bg-warning-light border-warning/20'
+            }`}
+          >
+            <div className="flex items-start gap-2">
+              {reparseResult.success ? (
+                <CheckCircle2 className="w-4 h-4 text-accent mt-0.5" />
+              ) : (
+                <AlertCircle className="w-4 h-4 text-warning mt-0.5" />
+              )}
+              <div>
+                <span className="text-sm font-medium block">
+                  {reparseResult.success ? 'Re-parse complete' : 'Re-parse issue'}
+                </span>
+                <span className="text-xs text-text-secondary">{reparseResult.message}</span>
+              </div>
+            </div>
+            <button onClick={() => setReparseResult(null)}>
+              <X className="w-4 h-4 text-text-muted" />
             </button>
           </motion.div>
         )}

@@ -309,19 +309,34 @@ export async function PATCH(request: NextRequest) {
     const filename = doc.filename || 'unknown';
     const ext = filename.split('.').pop()?.toLowerCase();
     let textContent: string;
+    let extractionMethod = 'unknown';
+    let extractionError: string | null = null;
 
     if (ext === 'pdf') {
       // PDF parsing with pdf-parse v2 API
       try {
         const { PDFParse } = await import('pdf-parse');
         const buffer = Buffer.from(await fileData.arrayBuffer());
+        console.log(`Re-parsing PDF: ${filename}, buffer size: ${buffer.length} bytes`);
         const pdfParser = new PDFParse({ data: buffer });
         const textResult = await pdfParser.getText();
-        textContent = textResult.pages?.map((p) => p.text).join('\n\n') || textResult.text || '';
+        const extractedText = textResult.pages?.map((p) => p.text).join('\n\n') || textResult.text || '';
         await pdfParser.destroy();
+
+        if (extractedText && extractedText.trim().length > 0) {
+          textContent = extractedText;
+          extractionMethod = 'pdf-parse-v2';
+          console.log(`PDF text extracted: ${textContent.length} chars`);
+        } else {
+          extractionMethod = 'pdf-parse-empty';
+          extractionError = 'PDF parsed but no text content found (may be scanned/image PDF)';
+          textContent = `[PDF file: ${filename}]\n\nPDF parsed but no text content found. This may be a scanned document that requires OCR.`;
+        }
       } catch (pdfError) {
         console.error('PDF parse error:', pdfError);
-        textContent = `[PDF file: ${filename}]\n\nPDF text extraction failed during re-parse.`;
+        extractionMethod = 'pdf-parse-failed';
+        extractionError = pdfError instanceof Error ? pdfError.message : 'Unknown PDF parse error';
+        textContent = `[PDF file: ${filename}]\n\nPDF text extraction failed: ${extractionError}`;
       }
     } else if (ext === 'csv' || ext === 'txt') {
       textContent = await fileData.text();
@@ -380,7 +395,12 @@ export async function PATCH(request: NextRequest) {
         doc_subtype: parseResult.docSubtype,
         source: detectSource(filename, textContent),
         status: 'parsed' as DocumentStatus,
-        parsed_data: { raw_text_length: textContent.length, reparsed_at: new Date().toISOString() },
+        parsed_data: {
+          raw_text_length: textContent.length,
+          reparsed_at: new Date().toISOString(),
+          extraction_method: extractionMethod,
+          extraction_error: extractionError,
+        },
         key_figures: parseResult.keyFigures,
         ai_summary: parseResult.summary,
       })
@@ -420,6 +440,11 @@ export async function PATCH(request: NextRequest) {
         suggestedEntity: parseResult.suggestedEntity,
         suggestedAccount: parseResult.suggestedAccount,
         questions: parseResult.questions,
+      },
+      extraction: {
+        method: extractionMethod,
+        error: extractionError,
+        textLength: textContent.length,
       },
     });
   } catch (error) {

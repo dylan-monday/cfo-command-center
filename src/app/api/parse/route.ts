@@ -39,14 +39,20 @@ export async function POST(request: NextRequest) {
     const filename = file.name;
 
     if (fileType === 'application/pdf') {
-      // For PDFs, we'll need to extract text
-      // Using dynamic import for pdf-parse
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pdfParseModule = await import('pdf-parse') as any;
-      const pdfParse = pdfParseModule.default || pdfParseModule;
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const pdfData = await pdfParse(buffer);
-      textContent = pdfData.text;
+      // For PDFs, we'll need to extract text using pdf-parse v2 API
+      try {
+        const { PDFParse } = await import('pdf-parse');
+        const buffer = Buffer.from(await file.arrayBuffer());
+        // PDFParse constructor takes buffer as first argument
+        const pdfParser = new PDFParse(buffer);
+        const textResult = await pdfParser.getText();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        textContent = (textResult as any).pages?.map((p: { text: string }) => p.text).join('\n\n') || '';
+      } catch (pdfError) {
+        console.error('PDF parse error:', pdfError);
+        // Fall back to noting it's a PDF we couldn't parse
+        textContent = `[PDF file: ${filename}]\n\nPDF text extraction failed. The document has been uploaded but could not be parsed automatically.`;
+      }
     } else if (fileType === 'text/csv') {
       // CSV files - read as text
       textContent = await file.text();
@@ -175,8 +181,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Parse API error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return Response.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }

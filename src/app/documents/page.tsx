@@ -219,7 +219,21 @@ export default function DocumentsPage() {
         throw new Error(data.error || 'Confirm failed');
       }
 
-      setConfirmResult({ success: true, message: 'Document confirmed and filed' });
+      // Build detailed success message with knowledge extraction info
+      let message = 'Document confirmed and filed.';
+      if (data.knowledge) {
+        const { inserted, updated, skipped } = data.knowledge;
+        const total = inserted + updated;
+        if (total > 0) {
+          message += ` Extracted ${total} fact${total > 1 ? 's' : ''} to knowledge base.`;
+        } else if (skipped > 0) {
+          message += ` ${skipped} fact${skipped > 1 ? 's' : ''} already in knowledge base.`;
+        } else {
+          message += ' No extractable facts found.';
+        }
+      }
+
+      setConfirmResult({ success: true, message });
 
       // Refresh documents list
       await fetchDocuments();
@@ -428,11 +442,68 @@ export default function DocumentsPage() {
         )}
       </AnimatePresence>
 
-      {/* Stats bar */}
+      {/* VIEW TOGGLE - Large prominent tabs at top */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.3 }}
+        className="bg-surface border border-border rounded-xl p-2"
+      >
+        <div className="flex">
+          <button
+            onClick={() => setViewMode('inbox')}
+            className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg text-base font-medium transition-all ${
+              viewMode === 'inbox'
+                ? 'bg-accent text-white shadow-md'
+                : 'bg-transparent hover:bg-surface-hover text-text-secondary'
+            }`}
+          >
+            <Inbox className="w-5 h-5" />
+            <span>Inbox</span>
+            {stats.parsed > 0 && (
+              <span className={`px-2.5 py-1 text-sm font-semibold rounded-full ${
+                viewMode === 'inbox' ? 'bg-white/25 text-white' : 'bg-warning text-white'
+              }`}>
+                {stats.parsed}
+              </span>
+            )}
+            {viewMode === 'inbox' && (
+              <span className="text-sm font-normal opacity-80 hidden sm:inline">
+                — needs review
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setViewMode('all')}
+            className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg text-base font-medium transition-all ${
+              viewMode === 'all'
+                ? 'bg-accent text-white shadow-md'
+                : 'bg-transparent hover:bg-surface-hover text-text-secondary'
+            }`}
+          >
+            <FolderOpen className="w-5 h-5" />
+            <span>All Documents</span>
+            {stats.confirmed > 0 && (
+              <span className={`px-2.5 py-1 text-sm font-semibold rounded-full ${
+                viewMode === 'all' ? 'bg-white/25 text-white' : 'bg-success/20 text-success'
+              }`}>
+                {stats.confirmed}
+              </span>
+            )}
+            {viewMode === 'all' && (
+              <span className="text-sm font-normal opacity-80 hidden sm:inline">
+                — filed &amp; confirmed
+              </span>
+            )}
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Stats bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15, duration: 0.3 }}
         className="grid grid-cols-2 sm:grid-cols-4 gap-4"
       >
         <div className="p-4 bg-surface border border-border rounded-lg">
@@ -465,44 +536,13 @@ export default function DocumentsPage() {
         </div>
       </motion.div>
 
-      {/* View Toggle + Filters */}
+      {/* Filters */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.3 }}
+        transition={{ delay: 0.2, duration: 0.3 }}
         className="flex flex-wrap items-center gap-3"
       >
-        {/* View Toggle */}
-        <div className="flex rounded-lg border border-border overflow-hidden">
-          <button
-            onClick={() => setViewMode('inbox')}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
-              viewMode === 'inbox'
-                ? 'bg-accent text-white'
-                : 'bg-surface hover:bg-surface-hover text-text-secondary'
-            }`}
-          >
-            <Inbox className="w-3.5 h-3.5" />
-            Inbox
-            {stats.parsed > 0 && viewMode !== 'inbox' && (
-              <span className="ml-1 px-1.5 py-0.5 bg-accent/20 text-accent text-[10px] rounded-full">
-                {stats.parsed}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setViewMode('all')}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors border-l border-border ${
-              viewMode === 'all'
-                ? 'bg-accent text-white'
-                : 'bg-surface hover:bg-surface-hover text-text-secondary'
-            }`}
-          >
-            <FolderOpen className="w-3.5 h-3.5" />
-            All Documents
-          </button>
-        </div>
-
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
           <input

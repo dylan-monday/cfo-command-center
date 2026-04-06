@@ -8,7 +8,6 @@ import {
   Building2,
   Wallet,
   AlertCircle,
-  PiggyBank,
   FileText,
   Download,
   Cloud,
@@ -22,7 +21,8 @@ interface DashboardStats {
   accounts: number;
   openAlerts: number;
   activeStrategies: number;
-  totalEstimatedSavings: number;
+  documentsToReview: number;
+  nextDeadline: { message: string; dueDate: string } | null;
 }
 
 interface Partner {
@@ -37,7 +37,8 @@ export default function Dashboard() {
     accounts: 0,
     openAlerts: 0,
     activeStrategies: 0,
-    totalEstimatedSavings: 0,
+    documentsToReview: 0,
+    nextDeadline: null,
   });
   const [loading, setLoading] = useState(true);
 
@@ -73,12 +74,26 @@ export default function Dashboard() {
         const strategiesData = await strategiesRes.json();
         const stratStats = strategiesData.stats || {};
 
+        // Fetch documents needing review (status = parsed)
+        const docsRes = await fetch('/api/parse?status=parsed&limit=1');
+        const docsData = await docsRes.json();
+        const documentsToReview = docsData.total || 0;
+
+        // Fetch next deadline from alerts
+        const deadlineRes = await fetch('/api/alerts?type=deadline&limit=1');
+        const deadlineData = await deadlineRes.json();
+        const deadlineAlerts = deadlineData.alerts || [];
+        const nextDeadline = deadlineAlerts.length > 0 && deadlineAlerts[0].due_date
+          ? { message: deadlineAlerts[0].message, dueDate: deadlineAlerts[0].due_date }
+          : null;
+
         setStats({
           entities: entities.length,
           accounts: totalAccounts,
           openAlerts: totalAlerts,
           activeStrategies: stratStats.byStatus?.active || 0,
-          totalEstimatedSavings: stratStats.totalEstimatedSavings || 0,
+          documentsToReview,
+          nextDeadline,
         });
 
         // Fetch CPA partners
@@ -185,12 +200,11 @@ export default function Dashboard() {
           icon={<AlertCircle className="w-5 h-5" />}
         />
         <MetricCard
-          label="Est. Tax Savings"
-          value={stats.totalEstimatedSavings}
-          format="currency"
-          variant="gradient"
+          label="Docs to Review"
+          value={stats.documentsToReview}
+          variant={stats.documentsToReview > 0 ? 'warning' : 'default'}
           delay={0.2}
-          icon={<PiggyBank className="w-5 h-5" />}
+          icon={<FileText className="w-5 h-5" />}
         />
       </div>
 

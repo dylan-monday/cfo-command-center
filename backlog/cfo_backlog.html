@@ -1,0 +1,145 @@
+
+<div style="padding: 1rem 0; font-family: var(--font-sans);">
+
+<div style="margin-bottom: 2rem;">
+<div style="font-size: 12px; font-weight: 500; color: var(--color-text-secondary); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 0.5px solid var(--color-border-tertiary);">Dashboard + UX</div>
+
+<div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; margin-bottom: 8px;">
+<div style="display: flex; gap: 10px; align-items: flex-start;">
+<span style="font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; background: #E6F1FB; color: #0C447C; flex-shrink: 0; margin-top: 1px;">UX</span>
+<div>
+<div style="font-size: 14px; font-weight: 500; color: var(--color-text-primary);">Open Alerts are orphaned — no source, no actions</div>
+<div style="font-size: 13px; color: var(--color-text-secondary); margin-top: 6px; line-height: 1.6;">Where do they come from? What should happen when you see one? How do they differ from Action Items? Fix: define alert sources explicitly (doc processing, thresholds, deadlines), make each alert actionable or dismissible, document the Alerts vs Action Items distinction.</div>
+</div>
+</div>
+</div>
+
+<div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; margin-bottom: 8px;">
+<div style="display: flex; gap: 10px; align-items: flex-start;">
+<span style="font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; background: #E6F1FB; color: #0C447C; flex-shrink: 0; margin-top: 1px;">UX</span>
+<div>
+<div style="font-size: 14px; font-weight: 500; color: var(--color-text-primary);">Tax savings card is not useful on the main dashboard</div>
+<div style="font-size: 13px; color: var(--color-text-secondary); margin-top: 6px; line-height: 1.6;">Replace with decision-relevant info: YTD payroll vs budget, entity cash positions, next filing deadlines, or document gaps. Tax savings belongs in a dedicated tax strategy view.</div>
+</div>
+</div>
+</div>
+
+<div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; margin-bottom: 8px;">
+<div style="display: flex; gap: 10px; align-items: flex-start;">
+<span style="font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; background: #FAEEDA; color: #633806; flex-shrink: 0; margin-top: 1px;">Feature</span>
+<div>
+<div style="font-size: 14px; font-weight: 500; color: var(--color-text-primary);">Entity icons in addition to colors</div>
+<div style="font-size: 13px; color: var(--color-text-secondary); margin-top: 6px; line-height: 1.6;">M+P → work building. Rental properties → house. Chippewa (primary) → house variant. Hidden Valley → land/terrain. Nice apartment → apartment. Personal accounts → person/family.</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="margin-bottom: 2rem;">
+<div style="font-size: 12px; font-weight: 500; color: var(--color-text-secondary); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 0.5px solid var(--color-border-tertiary);">Document pipeline</div>
+
+<div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; margin-bottom: 8px;">
+<div style="display: flex; gap: 10px; align-items: flex-start;">
+<span style="font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; background: #FCEBEB; color: #791F1F; flex-shrink: 0; margin-top: 1px;">Bug</span>
+<div>
+<div style="font-size: 14px; font-weight: 500; color: var(--color-text-primary);">2024 tax returns vanished after processing</div>
+<div style="font-size: 13px; color: var(--color-text-secondary); margin-top: 6px; line-height: 1.6;">M+P and Game of Thrones 2024 returns showed "processed" then disappeared. Either a display bug (stored but not surfaced) or a persistence bug (never written). High priority — if the knowledge base isn't reliably storing documents, everything built on top of it is suspect.</div>
+</div>
+</div>
+</div>
+
+<div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; margin-bottom: 8px;">
+<div style="display: flex; gap: 10px; align-items: flex-start;">
+<span style="font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; background: #FCEBEB; color: #791F1F; flex-shrink: 0; margin-top: 1px;">Bug</span>
+<div>
+<div style="font-size: 14px; font-weight: 500; color: var(--color-text-primary);">Chat doesn't read from extracted document data — it reasons from memory</div>
+<div style="font-size: 13px; color: var(--color-text-secondary); margin-top: 6px; line-height: 1.6;">When asked about Q1 payroll after uploading the CSV, the chat produced plausible-sounding estimates rather than reading stored facts. The pipeline needs to: (1) parse and extract structured data on upload, (2) write facts to the knowledge base, (3) make those facts available to the chat context. Right now step 3 is broken or step 2 isn't happening.</div>
+</div>
+</div>
+</div>
+
+<div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; margin-bottom: 8px;">
+<div style="display: flex; gap: 10px; align-items: flex-start;">
+<span style="font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; background: #E1F5EE; color: #085041; flex-shrink: 0; margin-top: 1px;">Data</span>
+<div>
+<div style="font-size: 14px; font-weight: 500; color: var(--color-text-primary);">Drive sweep needs a processing receipt per document</div>
+<div style="font-size: 13px; color: var(--color-text-secondary); margin-top: 6px; line-height: 1.6;">After sweep, show what was extracted: which facts, which entity, what confidence. Filing a document should confirm the knowledge base write, not just move the file. Make extraction visible, not silent.</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="margin-bottom: 2rem;">
+<div style="font-size: 12px; font-weight: 500; color: var(--color-text-secondary); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 0.5px solid var(--color-border-tertiary);">CPA / partner packet</div>
+
+<div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; margin-bottom: 8px;">
+<div style="display: flex; gap: 10px; align-items: flex-start;">
+<span style="font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; background: #FAEEDA; color: #633806; flex-shrink: 0; margin-top: 1px;">Feature</span>
+<div>
+<div style="font-size: 14px; font-weight: 500; color: var(--color-text-primary);">Rename to "partner packet" and link partners to entities</div>
+<div style="font-size: 13px; color: var(--color-text-secondary); margin-top: 6px; line-height: 1.6;">Partners exist in the system but none are surfaced in the packet workflow. Kevin Lakritz (Game of Thrones LLC) should appear at minimum. Aaron Ready (Ready CPA) for tax prep. Packet should be scoped per entity and per recipient — Kevin gets a partnership report, Aaron gets the full tax prep packet.</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="margin-bottom: 2rem;">
+<div style="font-size: 12px; font-weight: 500; color: var(--color-text-secondary); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 0.5px solid var(--color-border-tertiary);">Q1 2026 payroll — actual figures from uploaded CSV</div>
+
+<div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; margin-bottom: 8px;">
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; margin-bottom: 12px;">
+<div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px;">
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px;">Dylan gross wages</div>
+<div style="font-size: 16px; font-weight: 500; font-family: var(--font-mono);">$21,250</div>
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 2px;">+ $4,376 imputed health</div>
+</div>
+<div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px;">
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px;">Keelin gross wages</div>
+<div style="font-size: 16px; font-weight: 500; font-family: var(--font-mono);">$10,000</div>
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 2px;">no imputed income</div>
+</div>
+<div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px;">
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px;">Total gross payroll</div>
+<div style="font-size: 16px; font-weight: 500; font-family: var(--font-mono);">$35,626</div>
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 2px;">6 bi-monthly periods</div>
+</div>
+<div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px;">
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px;">Employee taxes withheld</div>
+<div style="font-size: 16px; font-weight: 500; font-family: var(--font-mono);">$5,324</div>
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 2px;">fed + SS + Medicare + LA</div>
+</div>
+<div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px;">
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px;">Employer taxes</div>
+<div style="font-size: 16px; font-weight: 500; font-family: var(--font-mono);">$2,698</div>
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 2px;">after tax reconciliation adj</div>
+</div>
+<div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px;">
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px;">401k (ee + company)</div>
+<div style="font-size: 16px; font-weight: 500; font-family: var(--font-mono);">$10,243</div>
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 2px;">$5,750 ee + $4,494 co</div>
+</div>
+</div>
+<div style="border-top: 0.5px solid var(--color-border-tertiary); padding-top: 12px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; margin-bottom: 12px;">
+<div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px;">
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px;">Health ins (company contrib)</div>
+<div style="font-size: 16px; font-weight: 500; font-family: var(--font-mono);">$4,376</div>
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 2px;">= $17,504 annualized</div>
+</div>
+<div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px;">
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px;">Dylan net pay (Q1)</div>
+<div style="font-size: 16px; font-weight: 500; font-family: var(--font-mono);">$11,707</div>
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 2px;">across 6 periods</div>
+</div>
+<div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px;">
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px;">Keelin net pay (Q1)</div>
+<div style="font-size: 16px; font-weight: 500; font-family: var(--font-mono);">$8,469</div>
+<div style="font-size: 11px; color: var(--color-text-secondary); margin-top: 2px;">across 6 periods</div>
+</div>
+</div>
+<div style="background: #FAEEDA; border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 13px; color: #633806; line-height: 1.6;">
+On the imputed income question: the $4,376 "S-Corp owner medical insurance imputed income" added to Dylan's gross is the standard S-Corp health insurance mechanism — M+P deducts premiums as a business expense, they flow through as W-2 wages on Dylan's return, and then Dylan claims a self-employed health insurance deduction on the 1040 to net it back out. Confirm with Aaron that the SE health insurance deduction is being captured on your personal return.
+</div>
+</div>
+</div>
+
+</div>

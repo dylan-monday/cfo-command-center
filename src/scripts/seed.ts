@@ -305,6 +305,19 @@ const factsByEntity: Record<string, Array<{ category: KnowledgeCategory; key: st
     // M+P Banking
     { category: 'financial', key: 'primary_bank', value: 'Chase' },
     { category: 'financial', key: 'chase_checking_last4', value: '9695' },
+
+    // Q1 2026 Payroll Data (from Gusto CSV)
+    { category: 'financial', key: '2026_q1_dylan_gross_wages', value: '$21,250' },
+    { category: 'financial', key: '2026_q1_dylan_imputed_health', value: '$4,376 (S-Corp owner medical insurance)' },
+    { category: 'financial', key: '2026_q1_dylan_net_pay', value: '$11,707' },
+    { category: 'financial', key: '2026_q1_keelin_gross_wages', value: '$10,000' },
+    { category: 'financial', key: '2026_q1_keelin_net_pay', value: '$8,469' },
+    { category: 'financial', key: '2026_q1_total_gross_payroll', value: '$35,626 (6 bi-monthly periods)' },
+    { category: 'financial', key: '2026_q1_employee_taxes_withheld', value: '$5,324 (fed + SS + Medicare + LA)' },
+    { category: 'financial', key: '2026_q1_employer_taxes', value: '$2,698' },
+    { category: 'financial', key: '2026_q1_401k_total', value: '$10,243 ($5,750 employee + $4,494 company match)' },
+    { category: 'financial', key: '2026_q1_health_insurance_company', value: '$4,376 (= $17,504 annualized)' },
+    { category: 'tax', key: 'imputed_income_note', value: 'Dylan $4,376 S-Corp owner health insurance is imputed income on W-2, then deducted as self-employed health insurance on 1040. Net tax effect zero but check Aaron is capturing the SE health deduction.' },
   ],
 
   got: [

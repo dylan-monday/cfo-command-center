@@ -1,4 +1,5 @@
 import type { StrategyStatus, AlertPriority } from '@/types';
+import { Briefcase, Home, Building, Mountain, User, type LucideIcon } from 'lucide-react';
 
 interface StatusBadgeProps {
   status: StrategyStatus | 'deprecated';
@@ -51,24 +52,29 @@ export function PriorityBadge({ priority }: PriorityBadgeProps) {
 interface EntityBadgeProps {
   slug: string;
   name?: string;
+  showIcon?: boolean;
 }
 
-export function EntityBadge({ slug, name }: EntityBadgeProps) {
-  const colorMap: Record<string, string> = {
-    mp: 'color-entity-mp',
-    got: 'color-entity-got',
-    saratoga: 'color-entity-saratoga',
-    nice: 'color-entity-nice',
-    chippewa: 'color-entity-chippewa',
-    hvr: 'color-entity-hvr',
-    personal: 'color-entity-personal',
+export function EntityBadge({ slug, name, showIcon = true }: EntityBadgeProps) {
+  // Entity icons by slug
+  const iconMap: Record<string, LucideIcon> = {
+    mp: Briefcase,     // M+P → work/business
+    got: Home,         // GOT → rental property
+    saratoga: Home,    // Saratoga → rental property
+    nice: Building,    // Nice → apartment
+    chippewa: Home,    // Chippewa → primary residence
+    hvr: Mountain,     // Hidden Valley → land
+    personal: User,    // Personal → person
   };
+
+  const Icon = iconMap[slug];
 
   return (
     <span
-      className="entity-tag"
+      className="entity-tag inline-flex items-center gap-1"
       style={{ color: `var(--entity-${slug})` }}
     >
+      {showIcon && Icon && <Icon className="w-3 h-3" />}
       {name || slug}
     </span>
   );

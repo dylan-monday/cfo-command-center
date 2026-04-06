@@ -137,6 +137,14 @@ export function AlertsPanel({ entitySlug, limit = 5 }: AlertsPanelProps) {
     monitor: 'priority-monitor',
   };
 
+  // Type labels that explain where alerts come from
+  const typeLabels: Record<string, { label: string; description: string }> = {
+    question: { label: 'Question', description: 'From document parsing' },
+    alert: { label: 'Alert', description: 'System notification' },
+    recommendation: { label: 'Suggestion', description: 'Proactive advice' },
+    deadline: { label: 'Deadline', description: 'Due date approaching' },
+  };
+
   const hasAlerts = alerts.length > 0;
   const criticalCount = alerts.filter(a => a.priority === 'critical' || a.priority === 'high').length;
 
@@ -244,8 +252,11 @@ export function AlertsPanel({ entitySlug, limit = 5 }: AlertsPanelProps) {
                           <EntityBadge slug={alert.entities.slug} name={alert.entities.name} />
                         )}
                         <span className="text-text-faint">·</span>
-                        <span className="badge badge-explore text-[10px] px-2 py-0.5">
-                          {alert.type}
+                        <span
+                          className="badge badge-explore text-[10px] px-2 py-0.5"
+                          title={typeLabels[alert.type]?.description || 'Action item'}
+                        >
+                          {typeLabels[alert.type]?.label || alert.type}
                         </span>
                         {alert.due_date && (
                           <>

@@ -506,7 +506,22 @@ export async function PUT(request: NextRequest) {
 
     const supabase = createServerSupabaseClient();
 
-    // Update document status (don't include confirmed_at if column doesn't exist)
+    // First, fetch the document to get key_figures for knowledge extraction
+    const { data: existingDoc, error: fetchError } = await supabase
+      .from('documents')
+      .select('*, entities!left(slug, name)')
+      .eq('id', documentId)
+      .single();
+
+    if (fetchError || !existingDoc) {
+      console.error('Document fetch error:', fetchError);
+      return Response.json(
+        { error: 'Document not found' },
+        { status: 404 }
+      );
+    }
+
+    // Update document status
     const updateData: Record<string, unknown> = {
       status: status as DocumentStatus,
     };
@@ -530,9 +545,27 @@ export async function PUT(request: NextRequest) {
 
     console.log('Document updated successfully:', updatedDoc?.id);
 
+    // If confirming, extract knowledge from the document
+    let knowledgeResult = null;
+    if (status === 'confirmed' && existingDoc.key_figures) {
+      const entitySlug = existingDoc.entities?.slug;
+      console.log('Extracting knowledge for confirmed document:', documentId, 'entity:', entitySlug);
+
+      knowledgeResult = await extractKnowledgeFromDocument({
+        documentId,
+        entitySlug,
+        docType: existingDoc.doc_type,
+        keyFigures: existingDoc.key_figures,
+        aiSummary: existingDoc.ai_summary,
+      });
+
+      console.log('Knowledge extraction result:', knowledgeResult);
+    }
+
     return Response.json({
       success: true,
       document: updatedDoc,
+      knowledge: knowledgeResult,
     });
   } catch (error) {
     console.error('PUT document status error:', error);

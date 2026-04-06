@@ -75,6 +75,53 @@
 
 ---
 
+# Bugs/issues from Dylan:
+The CFO says things like "I'm adding this to your action items" 
+but nothing actually gets created in the database. The AI needs 
+the ability to actually take actions during a conversation.
+
+Implement Claude tool use in the chat API. Define these tools 
+that Claude can call during a conversation:
+
+1. add_alert — Creates a proactive_queue item
+   Parameters: message, priority (critical/high/medium/low), 
+   entity_slug, type (alert/question/recommendation/deadline)
+
+2. add_knowledge — Creates a knowledge_base entry
+   Parameters: key, value, entity_slug, category, confidence
+
+3. update_knowledge — Updates an existing knowledge_base entry
+   Parameters: id, new_value (creates new entry that supersedes old)
+
+4. resolve_alert — Marks a proactive_queue item as resolved
+   Parameters: id, resolved_note
+
+When Claude calls one of these tools during a conversation, the 
+API route should execute the database operation and return 
+confirmation. Claude can then tell the user "Done — I've added 
+that to your action items" and it will actually be true.
+
+Add to the system prompt: "You have tools to add action items, 
+add facts to the knowledge base, update existing facts, and 
+resolve alerts. USE THEM when the conversation warrants it. 
+Don't just say you'll do something — actually do it."
+
+* in the dashboard "Open Alerts" doesn't do anything. I don't know where those alerts are coming from and there's nothing I can do about them - and how do these relate to the Action Items section?
+
+* the tax savings card is irrelevant. I need information that's useful on this screen
+
+* the google drive inbox sweep - not clear what happens when we sweep. It adds the file to the /documents section where I can file but not sure if/how that information is being used.
+
+* CPA packet - this needs to be a partner packet and currently no partners are linked here even though they are in the system somewhere
+
+* entities: in addition to  colors, let's use icons (house, work building, family, land)
+
+* Making sure information that gets extracted from documents informs the chat. For instance, I just uploaded the attached payroll report and then asked the chat for the q1 payroll breakdown and it said: 
+
+* "Looking at the Q1 2026 payroll summary, here's the breakdown:  **Total Q1 payroll cost: $32,164.25**  Dylan got $21,000 in wages, Keelin got $10,000. The rest was taxes and benefits - $728 in employer payroll taxes and $435 in workers comp insurance.  The big chunk was $17,500 in health insurance costs for the quarter, which makes sense for your family plan. That's running exactly on your annual $17,500 budget.  One thing - there's $436 listed as "S-Corp owner medical insurance imputed income" which I need to understand better. Is this related to how the health insurance deduction flows through the S-Corp structure?
+
+* I also added 2024 tax returns for M+P and Game of Thrones. It 'processed' those but now they have disappeared from the system.
+
 ## Roadmap
 
 ### Next Up (build after current bugs are fixed) - if finished move to the next
@@ -106,33 +153,3 @@
 - Voice input for chat
 - Scheduled reports (weekly/monthly auto-email)
 
-** from Dylan:
-The CFO says things like "I'm adding this to your action items" 
-but nothing actually gets created in the database. The AI needs 
-the ability to actually take actions during a conversation.
-
-Implement Claude tool use in the chat API. Define these tools 
-that Claude can call during a conversation:
-
-1. add_alert — Creates a proactive_queue item
-   Parameters: message, priority (critical/high/medium/low), 
-   entity_slug, type (alert/question/recommendation/deadline)
-
-2. add_knowledge — Creates a knowledge_base entry
-   Parameters: key, value, entity_slug, category, confidence
-
-3. update_knowledge — Updates an existing knowledge_base entry
-   Parameters: id, new_value (creates new entry that supersedes old)
-
-4. resolve_alert — Marks a proactive_queue item as resolved
-   Parameters: id, resolved_note
-
-When Claude calls one of these tools during a conversation, the 
-API route should execute the database operation and return 
-confirmation. Claude can then tell the user "Done — I've added 
-that to your action items" and it will actually be true.
-
-Add to the system prompt: "You have tools to add action items, 
-add facts to the knowledge base, update existing facts, and 
-resolve alerts. USE THEM when the conversation warrants it. 
-Don't just say you'll do something — actually do it."

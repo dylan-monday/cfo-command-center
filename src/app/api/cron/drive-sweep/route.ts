@@ -188,6 +188,13 @@ async function processFile(
   error?: string;
   documentId?: string;
   questions?: string[];
+  receipt?: {
+    docType: string;
+    entity: string | null;
+    summary: string;
+    keyFigures: Record<string, number | string> | null;
+    factsExtracted: number;
+  };
 }> {
   try {
     console.log(`Processing file: ${file.name} (${file.mimeType})`);
@@ -319,6 +326,13 @@ async function processFile(
       success: true,
       documentId: document?.id,
       questions: parseResult.questions,
+      receipt: {
+        docType: parseResult.docType,
+        entity: parseResult.suggestedEntity || null,
+        summary: parseResult.summary,
+        keyFigures: parseResult.keyFigures,
+        factsExtracted: parseResult.keyFigures ? Object.keys(parseResult.keyFigures).length : 0,
+      },
     };
   } catch (error) {
     console.error(`Error processing ${file.name}:`, error);

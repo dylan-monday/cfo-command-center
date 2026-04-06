@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChatMessage, ChatInput } from '@/components/chat';
+import { ChatMessage, ChatInput, DocumentPreview } from '@/components/chat';
 import { AlertTriangle, Check, X, Loader2 } from 'lucide-react';
 
 interface Message {
@@ -15,6 +15,23 @@ interface Message {
 interface AlertContext {
   id: string;
   message: string;
+}
+
+interface ParsedDocument {
+  filename: string;
+  tempPath: string | null;
+  summary: string;
+  docType: string;
+  docSubtype?: string;
+  keyFigures: Record<string, string | number>;
+  suggestedEntity?: string | null;
+  suggestedAccount?: string | null;
+  questions?: string[];
+}
+
+interface DocumentPreviewState {
+  parsed: ParsedDocument;
+  isConfirming: boolean;
 }
 
 const SUGGESTED_PROMPTS = [
@@ -39,6 +56,10 @@ function ChatPageContent() {
   const [alertContext, setAlertContext] = useState<AlertContext | null>(null);
   const [resolvingAlert, setResolvingAlert] = useState(false);
   const [alertResolved, setAlertResolved] = useState(false);
+
+  // Document upload state
+  const [pendingDocument, setPendingDocument] = useState<DocumentPreviewState | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   // Check for property review context from URL or sessionStorage
   useEffect(() => {
@@ -229,6 +250,140 @@ function ChatPageContent() {
     }
   }, [autoSendPending, entities.length, isStreaming, messages.length, handleSend]);
 
+  // Handle file upload - parse and show preview
+  const handleFileUpload = async (file: File) => {
+    setUploadingFile(true);
+
+    // Add a user message showing they uploaded a file
+    const userMessage: Message = {
+      role: 'user',
+      content: `📎 Uploading document: ${file.name}`,
+      timestamp: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (entitySlug) {
+        formData.append('entityHint', entitySlug);
+      }
+
+      const response = await fetch('/api/parse-preview', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to parse document');
+      }
+
+      const data = await response.json();
+
+      // Set pending document for review
+      setPendingDocument({
+        parsed: {
+          filename: data.preview.filename,
+          tempPath: data.preview.tempPath,
+          summary: data.parsed.summary,
+          docType: data.parsed.docType,
+          docSubtype: data.parsed.docSubtype,
+          keyFigures: data.parsed.keyFigures,
+          suggestedEntity: data.parsed.suggestedEntity,
+          suggestedAccount: data.parsed.suggestedAccount,
+          questions: data.parsed.questions,
+        },
+        isConfirming: false,
+      });
+
+      // Add assistant message prompting review
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: `I've parsed **${file.name}**. Please review the extracted information below and confirm if everything looks correct, or edit any values that need correction.`,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+
+    } catch (error) {
+      console.error('File upload error:', error);
+      const errorMessage: Message = {
+        role: 'assistant',
+        content: 'Sorry, I had trouble parsing that document. Please try again or use a different file format.',
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  // Handle document confirmation
+  const handleConfirmDocument = async (edits: Record<string, string | number>) => {
+    if (!pendingDocument) return;
+
+    setPendingDocument((prev) => prev ? { ...prev, isConfirming: true } : null);
+
+    try {
+      const response = await fetch('/api/parse-preview', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: pendingDocument.parsed.filename,
+          tempPath: pendingDocument.parsed.tempPath,
+          docType: pendingDocument.parsed.docType,
+          docSubtype: pendingDocument.parsed.docSubtype,
+          keyFigures: pendingDocument.parsed.keyFigures,
+          summary: pendingDocument.parsed.summary,
+          entitySlug: pendingDocument.parsed.suggestedEntity || entitySlug,
+          accountName: pendingDocument.parsed.suggestedAccount,
+          userEdits: edits,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save document');
+      }
+
+      const data = await response.json();
+
+      // Add success message
+      const successMessage: Message = {
+        role: 'assistant',
+        content: `✅ **${pendingDocument.parsed.filename}** has been saved to the knowledge base. ${
+          data.knowledge?.factsCreated
+            ? `I extracted ${data.knowledge.factsCreated} fact${data.knowledge.factsCreated > 1 ? 's' : ''} from this document.`
+            : ''
+        }`,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, successMessage]);
+
+      // Clear pending document
+      setPendingDocument(null);
+
+    } catch (error) {
+      console.error('Document confirm error:', error);
+      const errorMessage: Message = {
+        role: 'assistant',
+        content: 'Sorry, I had trouble saving that document. Please try again.',
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+      setPendingDocument((prev) => prev ? { ...prev, isConfirming: false } : null);
+    }
+  };
+
+  // Handle document rejection
+  const handleRejectDocument = () => {
+    const rejectMessage: Message = {
+      role: 'assistant',
+      content: 'Document discarded. Feel free to upload another file or ask me anything.',
+      timestamp: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, rejectMessage]);
+    setPendingDocument(null);
+  };
+
   return (
     <div className="h-full flex flex-col bg-bg">
       {/* Minimal header */}
@@ -354,6 +509,21 @@ function ChatPageContent() {
                   }
                 />
               ))}
+
+              {/* Document preview for user confirmation */}
+              {pendingDocument && (
+                <DocumentPreview
+                  filename={pendingDocument.parsed.filename}
+                  summary={pendingDocument.parsed.summary}
+                  docType={pendingDocument.parsed.docType}
+                  keyFigures={pendingDocument.parsed.keyFigures}
+                  suggestedEntity={pendingDocument.parsed.suggestedEntity}
+                  questions={pendingDocument.parsed.questions}
+                  onConfirm={handleConfirmDocument}
+                  onReject={handleRejectDocument}
+                  isConfirming={pendingDocument.isConfirming}
+                />
+              )}
             </>
           )}
           <div ref={messagesEndRef} />
@@ -361,7 +531,12 @@ function ChatPageContent() {
       </div>
 
       {/* Input area */}
-      <ChatInput onSend={handleSend} disabled={isStreaming} />
+      <ChatInput
+        onSend={handleSend}
+        onFileUpload={handleFileUpload}
+        disabled={isStreaming || !!pendingDocument}
+        uploadingFile={uploadingFile}
+      />
     </div>
   );
 }

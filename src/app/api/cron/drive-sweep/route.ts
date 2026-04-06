@@ -108,21 +108,32 @@ async function listInboxFiles(): Promise<Array<{
   console.log('=== DRIVE SWEEP DEBUG ===');
   console.log('ROOT_FOLDER_ID:', ROOT_FOLDER_ID);
 
+  // First, let's see what the API can access at all
+  const { data: allFiles } = await drive.files.list({
+    pageSize: 10,
+    fields: 'files(id, name, mimeType, parents)',
+  });
+  console.log('API can see these files (first 10):', allFiles.files?.map(f => ({ name: f.name, id: f.id, parents: f.parents })));
+
   const inboxFolderId = await ensureFolder(CFO_INBOX_FOLDER_NAME, ROOT_FOLDER_ID);
   console.log('Found/created CFO Inbox folder ID:', inboxFolderId);
 
+  // Try querying with corpora parameter for shared drives
   const query = `'${inboxFolderId}' in parents and trashed=false`;
   console.log('Query:', query);
 
   const { data } = await drive.files.list({
     q: query,
-    fields: 'files(id, name, mimeType, size)',
+    fields: 'files(id, name, mimeType, size, owners, shared)',
     orderBy: 'createdTime asc',
-    pageSize: 20, // Process up to 20 files per run
+    pageSize: 20,
+    // Include files shared with the service account
+    includeItemsFromAllDrives: true,
+    supportsAllDrives: true,
   });
 
-  console.log('Files found:', data.files?.length || 0);
-  console.log('File names:', data.files?.map(f => f.name));
+  console.log('Files found in inbox:', data.files?.length || 0);
+  console.log('File details:', data.files?.map(f => ({ name: f.name, owners: f.owners, shared: f.shared })));
   console.log('=========================');
 
   return (data.files || []).map((f) => ({

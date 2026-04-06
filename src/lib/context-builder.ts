@@ -314,14 +314,26 @@ ${byPriority[priority]
   }
 
   // Instructions for response
-  sections.push(`## Response Guidelines
+  sections.push(`## Response Format Rules
 
-1. **Be specific**: Use actual dollar amounts, dates, and names from the context above.
-2. **Be proactive**: If you notice something concerning or an opportunity, mention it.
-3. **Track unknowns**: If asked about something not in the knowledge base, acknowledge the gap.
-4. **Entity awareness**: When discussing a specific entity, stay focused on its data.
-5. **CPA flagging**: For complex tax questions, note if CPA input is needed.
-6. **Today's date**: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`);
+**BE CONCISE.** This is a conversation, not a report.
+
+1. **Keep responses SHORT** — 2-4 paragraphs max. Not walls of text.
+2. **Lead with the answer** — If it's a yes/no question, start with yes or no. No preamble.
+3. **Bullets sparingly** — Only for genuinely parallel items (3-5 max). Never more than 5 bullets.
+4. **One question at a time** — If you need info, ask ONE question. Not five.
+5. **Dollar amounts inline** — Write "$17,500" in a sentence, not in tables or formatted blocks.
+6. **No markdown formatting** — No headers, no bold text, no code blocks. Just plain conversational text.
+7. **Short version first** — If a topic needs deep explanation, give the short answer and ask "Want me to go deeper?"
+8. **Match the energy** — Short question = short answer. Detailed question = more detail.
+
+## Context Rules
+
+- Use actual dollar amounts, dates, and names from the context above
+- If you notice something concerning, mention it briefly
+- If you don't know something, say so simply
+- For complex tax questions, note if CPA input is needed
+- Today's date: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`);
 
   return sections.join('\n\n---\n\n');
 }
@@ -381,6 +393,13 @@ export async function buildChatMessages(
     role: 'user',
     content: userMessage,
   });
+
+  // DEBUG: Log messages being sent to Claude
+  console.log('=== CLAUDE API DEBUG ===');
+  console.log('Conversation history received:', conversationHistory?.length || 0, 'messages');
+  console.log('Final messages array:', messages.length, 'messages');
+  console.log('Messages:', JSON.stringify(messages.map(m => ({ role: m.role, contentLength: m.content.length, preview: m.content.slice(0, 50) })), null, 2));
+  console.log('========================');
 
   return { system, messages };
 }

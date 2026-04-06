@@ -44,18 +44,31 @@ export async function POST(request: NextRequest) {
     let conversationHistory: Message[] = [];
     let existingConversationId = conversationId;
 
+    // DEBUG: Log incoming request
+    console.log('=== CHAT API DEBUG ===');
+    console.log('Received conversationId:', conversationId || 'NONE');
+    console.log('Received entitySlug:', entitySlug || 'NONE');
+    console.log('Message preview:', message.slice(0, 100));
+
     if (conversationId) {
       const supabase = createServerSupabaseClient();
-      const { data: conversation } = await supabase
+      const { data: conversation, error } = await supabase
         .from('conversations')
         .select('messages')
         .eq('id', conversationId)
         .single();
 
+      console.log('DB query error:', error?.message || 'NONE');
+      console.log('Conversation found:', !!conversation);
+      console.log('Messages in DB:', conversation?.messages?.length || 0);
+
       if (conversation) {
         conversationHistory = conversation.messages as Message[];
       }
+    } else {
+      console.log('No conversationId - starting fresh conversation');
     }
+    console.log('======================');
 
     // Streaming response
     if (stream) {

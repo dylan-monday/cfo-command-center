@@ -19,7 +19,7 @@ const anthropic = new Anthropic({
 
 // Model configuration
 const DEFAULT_MODEL = 'claude-sonnet-4-20250514';
-const MAX_TOKENS = 4096;
+const MAX_TOKENS = 500; // Hard ceiling for concise responses
 
 // ============================================================================
 // Types

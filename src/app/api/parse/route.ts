@@ -43,11 +43,13 @@ export async function POST(request: NextRequest) {
       try {
         const { PDFParse } = await import('pdf-parse');
         const buffer = Buffer.from(await file.arrayBuffer());
-        // PDFParse constructor takes buffer as first argument
-        const pdfParser = new PDFParse(buffer);
+        // PDFParse v2 constructor takes options object with data property
+        const pdfParser = new PDFParse({ data: buffer });
         const textResult = await pdfParser.getText();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        textContent = (textResult as any).pages?.map((p: { text: string }) => p.text).join('\n\n') || '';
+        // Combine text from all pages
+        textContent = textResult.pages?.map((p) => p.text).join('\n\n') || textResult.text || '';
+        // Clean up
+        await pdfParser.destroy();
       } catch (pdfError) {
         console.error('PDF parse error:', pdfError);
         // Fall back to noting it's a PDF we couldn't parse

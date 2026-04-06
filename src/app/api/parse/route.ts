@@ -484,9 +484,12 @@ export async function PATCH(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { documentId, status } = await request.json();
+    const body = await request.json();
+    console.log('PUT /api/parse received:', body);
+    const { documentId, status } = body;
 
     if (!documentId) {
+      console.log('PUT error: documentId missing');
       return Response.json(
         { error: 'documentId is required' },
         { status: 400 }
@@ -494,6 +497,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (!status || !['confirmed', 'parsed', 'processing', 'error'].includes(status)) {
+      console.log('PUT error: invalid status:', status);
       return Response.json(
         { error: 'Invalid status. Must be: confirmed, parsed, processing, or error' },
         { status: 400 }
@@ -502,13 +506,16 @@ export async function PUT(request: NextRequest) {
 
     const supabase = createServerSupabaseClient();
 
-    // Update document status
+    // Update document status (don't include confirmed_at if column doesn't exist)
+    const updateData: Record<string, unknown> = {
+      status: status as DocumentStatus,
+    };
+
+    console.log('Updating document:', documentId, 'to status:', status);
+
     const { data: updatedDoc, error: updateError } = await supabase
       .from('documents')
-      .update({
-        status: status as DocumentStatus,
-        ...(status === 'confirmed' && { confirmed_at: new Date().toISOString() }),
-      })
+      .update(updateData)
       .eq('id', documentId)
       .select('*, entities!left(slug, name), accounts!left(name)')
       .single();
@@ -516,10 +523,12 @@ export async function PUT(request: NextRequest) {
     if (updateError) {
       console.error('Document status update error:', updateError);
       return Response.json(
-        { error: 'Failed to update document status' },
+        { error: 'Failed to update document status', details: updateError.message },
         { status: 500 }
       );
     }
+
+    console.log('Document updated successfully:', updatedDoc?.id);
 
     return Response.json({
       success: true,

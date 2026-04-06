@@ -66,7 +66,7 @@
 - [x] Added solid card variants (.card-gradient, .card-accent, etc.)
 - [x] Fixed RLS bypass for single-user app (service role key)
 
-### Chat Bug Fixes (April 2026)
+2### Chat Bug Fixes (April 2026)
 - [x] Fixed conversation loading — GET /api/chat now returns messages when conversationId provided
 - [x] Verified conversation context is properly sent to Claude via buildChatMessages()
 - [x] Added Source Sans 3 font for chat messages
@@ -105,3 +105,34 @@
 - CPA/bookkeeper portal (read-only access with their own login)
 - Voice input for chat
 - Scheduled reports (weekly/monthly auto-email)
+
+** from Dylan:
+The CFO says things like "I'm adding this to your action items" 
+but nothing actually gets created in the database. The AI needs 
+the ability to actually take actions during a conversation.
+
+Implement Claude tool use in the chat API. Define these tools 
+that Claude can call during a conversation:
+
+1. add_alert — Creates a proactive_queue item
+   Parameters: message, priority (critical/high/medium/low), 
+   entity_slug, type (alert/question/recommendation/deadline)
+
+2. add_knowledge — Creates a knowledge_base entry
+   Parameters: key, value, entity_slug, category, confidence
+
+3. update_knowledge — Updates an existing knowledge_base entry
+   Parameters: id, new_value (creates new entry that supersedes old)
+
+4. resolve_alert — Marks a proactive_queue item as resolved
+   Parameters: id, resolved_note
+
+When Claude calls one of these tools during a conversation, the 
+API route should execute the database operation and return 
+confirmation. Claude can then tell the user "Done — I've added 
+that to your action items" and it will actually be true.
+
+Add to the system prompt: "You have tools to add action items, 
+add facts to the knowledge base, update existing facts, and 
+resolve alerts. USE THEM when the conversation warrants it. 
+Don't just say you'll do something — actually do it."
